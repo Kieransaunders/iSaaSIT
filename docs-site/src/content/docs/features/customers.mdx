@@ -1,0 +1,85 @@
+---
+title: Customer Management
+description: Managing client companies in iSaaSIT
+---
+
+Customers represent your agency's client companies in iSaaSIT.
+
+## What is a Customer?
+
+A Customer is a client company that your agency manages. Each Customer:
+- Belongs to one Organization (your agency)
+- Has isolated data from other customers
+- Can have multiple Client users
+- Is assigned to Staff members
+
+## Data Model
+
+```typescript
+customers: defineTable({
+  orgId: v.id('organizations'),
+  name: v.string(),
+  slug: v.string(),        // Unique within org
+  settings: v.object({
+    // Customer-specific settings
+  }),
+  createdAt: v.number(),
+})
+  .index('by_org', ['orgId'])
+  .index('by_org_slug', ['orgId', 'slug']);
+```
+
+## Creating a Customer
+
+```typescript
+export const create = mutation({
+  args: {
+    name: v.string(),
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const org = await getCurrentOrg(ctx);
+    
+    // Check customer limit
+    const existingCount = await ctx.db
+      .query('customers')
+      .withIndex('by_org', q => q.eq('orgId', org._id))
+      .collect();
+      
+    if (existingCount.length >= org.maxCustomers) {
+      throw new Error('Customer limit reached');
+    }
+    
+    return await ctx.db.insert('customers', {
+      orgId: org._id,
+      name: args.name,
+      slug: args.slug,
+      createdAt: Date.now(),
+    });
+  },
+});
+```
+
+## Assigning Staff to Customers
+
+Staff members can be assigned to specific customers:
+
+```typescript
+staffCustomerAssignments: defineTable({
+  staffUserId: v.id('users'),
+  customerId: v.id('customers'),
+  orgId: v.id('organizations'),
+  assignedAt: v.number(),
+})
+  .index('by_staff', ['staffUserId'])
+  .index('by_customer', ['customerId']);
+```
+
+## Customer Portal
+
+Customers have a self-service portal where they can:
+- View their data
+- Manage their users
+- Update their settings
+
+Access is restricted based on the Client role.

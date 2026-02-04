@@ -34,6 +34,9 @@ function Home() {
             <span className="text-lg font-semibold">iSaaSIT</span>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="ghost" asChild>
+              <a href="/blog">Blog</a>
+            </Button>
             <ModeToggle />
             <Button variant="ghost" asChild>
               <a href={signInUrl}>Sign in</a>
@@ -157,6 +160,9 @@ function AuthenticatedHome() {
             <span className="text-lg font-semibold">iSaaSIT</span>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="ghost" asChild>
+              <a href="/blog">Blog</a>
+            </Button>
             <ModeToggle />
             <Button asChild>
               <Link to="/dashboard">Go to Dashboard</Link>

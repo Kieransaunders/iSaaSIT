@@ -13,12 +13,15 @@
     "url": "https://github.com/workos/template-convex-tanstack-start-authkit/issues"
   },
   "scripts": {
-    "dev": "npm-run-all --parallel dev:frontend dev:backend",
+    "dev": "npm-run-all --parallel dev:frontend dev:backend dev:docs",
     "dev:frontend": "vite dev",
     "dev:backend": "convex dev",
+    "dev:docs": "cd docs-site && npm run dev -- --port 4321",
     "predev": "convex dev --until-success && convex dashboard",
     "build": "vite build",
+    "build:docs": "cd docs-site && npm run build",
     "start": "vite start",
+    "preview:docs": "cd docs-site && npm run preview",
     "format": "prettier --write .",
     "lint": "tsc && eslint .  --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
@@ -33,6 +36,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.31.7",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.563.0",
     "radix-ui": "^1.4.3",
     "react": "^19.2.4",

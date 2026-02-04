@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as customers_crud from "../customers/crud.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as orgs_create from "../orgs/create.js";
 import type * as orgs_get from "../orgs/get.js";
@@ -20,6 +21,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "customers/crud": typeof customers_crud;
   myFunctions: typeof myFunctions;
   "orgs/create": typeof orgs_create;
   "orgs/get": typeof orgs_get;

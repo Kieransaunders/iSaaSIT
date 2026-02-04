@@ -1,0 +1,101 @@
+---
+title: Authentication Best Practices
+description: Learn how to implement secure authentication with WorkOS AuthKit
+date: 2026-02-02
+---
+
+# Authentication Best Practices
+
+**Published:** February 2, 2026
+
+Authentication is critical for any SaaS application. Here's how iSaaSIT handles it securely.
+
+## Why WorkOS AuthKit?
+
+iSaaSIT uses WorkOS AuthKit because it provides:
+
+- **Enterprise SSO** - SAML, OIDC support
+- **Passwordless auth** - Magic links, social login
+- **Security** - SOC 2 compliant, MFA support
+- **Developer experience** - Simple integration
+
+## Setting Up Authentication
+
+### 1. Configure WorkOS
+
+In your WorkOS dashboard:
+
+1. Create a project
+2. Set up your redirect URIs
+3. Configure your authentication methods
+
+### 2. Environment Variables
+
+```bash
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_test_xxx
+WORKOS_COOKIE_PASSWORD=your-32-char-secret
+WORKOS_REDIRECT_URI=http://localhost:3000/callback
+```
+
+### 3. Protect Routes
+
+Use the `_authenticated` layout to protect routes:
+
+```tsx
+// routes/_authenticated.tsx
+export const Route = createFileRoute('/_authenticated')({
+  loader: async ({ location }) => {
+    const { user } = await getAuth();
+    if (!user) {
+      const href = await getSignInUrl({ 
+        data: { returnPathname: location.pathname } 
+      });
+      throw redirect({ href });
+    }
+  },
+});
+```
+
+## Security Best Practices
+
+### Use HTTPS in Production
+
+Always use HTTPS for your redirect URIs in production:
+
+```bash
+WORKOS_REDIRECT_URI=https://app.yoursaas.com/callback
+```
+
+### Secure Cookie Password
+
+Generate a strong random password:
+
+```bash
+openssl rand -base64 32
+```
+
+### Validate Sessions Server-Side
+
+Always verify authentication on the server, not just client-side.
+
+### Implement Proper Sign-Out
+
+```tsx
+const { signOut } = useAuth();
+
+<button onClick={() => signOut()}>
+  Sign Out
+</button>
+```
+
+## Common Pitfalls
+
+1. **Trusting client-side auth only** - Always verify on the server
+2. **Hardcoding secrets** - Use environment variables
+3. **Ignoring token expiration** - Handle refresh properly
+4. **Missing logout cleanup** - Clear local state on sign out
+
+## Conclusion
+
+With WorkOS AuthKit and iSaaSIT's built-in patterns, you get enterprise-grade authentication with minimal effort.

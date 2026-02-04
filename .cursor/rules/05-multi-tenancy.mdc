@@ -1,0 +1,537 @@
+---
+description: Multi-tenancy patterns - orgs, customers, roles, data isolation
+globs: convex/**/*.ts, src/**/*.tsx
+alwaysApply: true
+---
+
+# 5. Multi-Tenancy Patterns
+
+This document covers the multi-tenant architecture, role-based access control, and data isolation patterns for iSaaSIT.
+
+## Architecture Overview
+
+```
+Org (Agency)
+├── Admin users (full access)
+├── Staff users (assigned customers only)
+│   └── StaffCustomerAssignment → links Staff to Customers
+└── Customers (Client companies)
+    ├── Customer data
+    └── Client users (own customer only)
+```
+
+## Entity Relationships
+
+### Schema Relationships
+
+```typescript
+// convex/schema.ts
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+
+export default defineSchema({
+    // Organization - synced from WorkOS, stores subscription data
+    orgs: defineTable({
+        workOsOrgId: v.string(),      // Links to WorkOS organization
+        name: v.string(),
+        subscriptionId: v.optional(v.string()),
+        planId: v.optional(v.string()),
+        status: v.union(
+            v.literal("active"),
+            v.literal("trialing"),
+            v.literal("past_due"),
+            v.literal("canceled")
+        ),
+        maxCustomers: v.number(),
+        maxStaff: v.number(),
+        maxClients: v.number(),
+    })
+        .index("by_workos_org", ["workOsOrgId"])
+        .index("by_subscription", ["subscriptionId"]),
+
+    // Customer - agency's client company
+    customers: defineTable({
+        orgId: v.id("orgs"),
+        name: v.string(),
+        email: v.optional(v.string()),
+        status: v.union(
+            v.literal("active"),
+            v.literal("inactive")
+        ),
+    })
+        .index("by_org", ["orgId"])
+        .index("by_org_name", ["orgId", "name"]),
+
+    // User - stored in Convex for linking to customers
+    users: defineTable({
+        workOsUserId: v.string(),
+        orgId: v.id("orgs"),
+        customerId: v.optional(v.id("customers")), // Only for Client role
+        role: v.union(
+            v.literal("admin"),
+            v.literal("staff"),
+            v.literal("client")
+        ),
+        email: v.string(),
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+    })
+        .index("by_workos_user", ["workOsUserId"])
+        .index("by_org", ["orgId"])
+        .index("by_customer", ["customerId"])
+        .index("by_org_role", ["orgId", "role"]),
+
+    // Staff-Customer assignments (Staff can access assigned customers)
+    staffCustomerAssignments: defineTable({
+        userId: v.id("users"),
+        customerId: v.id("customers"),
+        orgId: v.id("orgs"),
+        assignedBy: v.id("users"),  // Admin who assigned
+        assignedAt: v.number(),     // Timestamp
+    })
+        .index("by_user", ["userId"])
+        .index("by_customer", ["customerId"])
+        .index("by_org_user", ["orgId", "userId"]),
+});
+```
+
+## Role Definitions
+
+| Role | WorkOS Role Slug | Visibility | Capabilities |
+|------|-----------------|------------|--------------|
+| Admin | `admin` | All org data | Billing, invites, full access |
+| Staff | `staff` | Assigned Customers only | Standard access within scope |
+| Client | `client` | Own Customer only | Limited access within scope |
+
+## Access Control Patterns
+
+### Role Checking Helper
+
+```typescript
+// convex/lib/auth.ts
+import { QueryCtx, MutationCtx } from "./_generated/server";
+
+type Role = "admin" | "staff" | "client";
+
+export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
+    const workOsUserId = ctx.auth?.userId;
+    if (!workOsUserId) return null;
+    
+    return await ctx.db
+        .query("users")
+        .withIndex("by_workos_user", (q) => q.eq("workOsUserId", workOsUserId))
+        .unique();
+}
+
+export async function requireAuth(ctx: QueryCtx | MutationCtx) {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+    return user;
+}
+
+export async function requireRole(
+    ctx: QueryCtx | MutationCtx, 
+    allowedRoles: Role[]
+) {
+    const user = await requireAuth(ctx);
+    if (!allowedRoles.includes(user.role)) {
+        throw new Error("Forbidden: insufficient permissions");
+    }
+    return user;
+}
+```
+
+### Admin-Only Query
+
+```typescript
+import { query } from "./_generated/server";
+import { v } from "convex/values";
+import { requireRole } from "./lib/auth";
+
+export const getOrgBilling = query({
+    args: { orgId: v.id("orgs") },
+    handler: async (ctx, args) => {
+        const user = await requireRole(ctx, ["admin"]);
+        
+        // Verify user belongs to this org
+        if (user.orgId !== args.orgId) {
+            throw new Error("Forbidden: not your organization");
+        }
+        
+        return await ctx.db.get(args.orgId);
+    },
+});
+```
+
+### Staff-Scoped Query
+
+```typescript
+export const getAccessibleCustomers = query({
+    args: {},
+    handler: async (ctx) => {
+        const user = await requireAuth(ctx);
+        
+        // Admin sees all customers in org
+        if (user.role === "admin") {
+            return await ctx.db
+                .query("customers")
+                .withIndex("by_org", (q) => q.eq("orgId", user.orgId))
+                .collect();
+        }
+        
+        // Staff sees assigned customers
+        if (user.role === "staff") {
+            const assignments = await ctx.db
+                .query("staffCustomerAssignments")
+                .withIndex("by_user", (q) => q.eq("userId", user._id))
+                .collect();
+            
+            const customers = [];
+            for (const assignment of assignments) {
+                const customer = await ctx.db.get(assignment.customerId);
+                if (customer) customers.push(customer);
+            }
+            return customers;
+        }
+        
+        // Client sees own customer
+        if (user.role === "client" && user.customerId) {
+            const customer = await ctx.db.get(user.customerId);
+            return customer ? [customer] : [];
+        }
+        
+        return [];
+    },
+});
+```
+
+### Customer-Scoped Data
+
+```typescript
+export const getCustomerProjects = query({
+    args: { customerId: v.id("customers") },
+    handler: async (ctx, args) => {
+        const user = await requireAuth(ctx);
+        const customer = await ctx.db.get(args.customerId);
+        
+        if (!customer) throw new Error("Customer not found");
+        
+        // Verify user has access to this customer
+        const hasAccess = await checkCustomerAccess(ctx, user, args.customerId);
+        if (!hasAccess) {
+            throw new Error("Forbidden: no access to this customer");
+        }
+        
+        return await ctx.db
+            .query("projects")
+            .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
+            .collect();
+    },
+});
+
+async function checkCustomerAccess(
+    ctx: QueryCtx,
+    user: Doc<"users">,
+    customerId: Id<"customers">
+): Promise<boolean> {
+    // Admin can access all customers in their org
+    if (user.role === "admin") {
+        const customer = await ctx.db.get(customerId);
+        return customer?.orgId === user.orgId;
+    }
+    
+    // Staff needs assignment
+    if (user.role === "staff") {
+        const assignment = await ctx.db
+            .query("staffCustomerAssignments")
+            .withIndex("by_user", (q) => 
+                q.eq("userId", user._id).eq("customerId", customerId)
+            )
+            .unique();
+        return !!assignment;
+    }
+    
+    // Client can only access their own customer
+    if (user.role === "client") {
+        return user.customerId === customerId;
+    }
+    
+    return false;
+}
+```
+
+## Staff-Customer Assignment
+
+### Assign Staff to Customer
+
+```typescript
+import { mutation } from "./_generated/server";
+import { v } from "convex/values";
+import { requireRole, getCurrentUser } from "./lib/auth";
+
+export const assignStaffToCustomer = mutation({
+    args: {
+        staffUserId: v.id("users"),
+        customerId: v.id("customers"),
+    },
+    handler: async (ctx, args) => {
+        // Only admins can assign staff
+        const adminUser = await requireRole(ctx, ["admin"]);
+        
+        // Verify staff user exists and is in same org
+        const staffUser = await ctx.db.get(args.staffUserId);
+        if (!staffUser) throw new Error("Staff user not found");
+        if (staffUser.orgId !== adminUser.orgId) {
+            throw new Error("Staff user not in your organization");
+        }
+        if (staffUser.role !== "staff") {
+            throw new Error("User is not a staff member");
+        }
+        
+        // Verify customer exists and is in same org
+        const customer = await ctx.db.get(args.customerId);
+        if (!customer) throw new Error("Customer not found");
+        if (customer.orgId !== adminUser.orgId) {
+            throw new Error("Customer not in your organization");
+        }
+        
+        // Check if assignment already exists
+        const existing = await ctx.db
+            .query("staffCustomerAssignments")
+            .withIndex("by_user", (q) => 
+                q.eq("userId", args.staffUserId).eq("customerId", args.customerId)
+            )
+            .unique();
+        
+        if (existing) {
+            throw new Error("Staff already assigned to this customer");
+        }
+        
+        // Create assignment
+        return await ctx.db.insert("staffCustomerAssignments", {
+            userId: args.staffUserId,
+            customerId: args.customerId,
+            orgId: adminUser.orgId,
+            assignedBy: adminUser._id,
+            assignedAt: Date.now(),
+        });
+    },
+});
+```
+
+### Remove Staff Assignment
+
+```typescript
+export const removeStaffAssignment = mutation({
+    args: {
+        assignmentId: v.id("staffCustomerAssignments"),
+    },
+    handler: async (ctx, args) => {
+        const adminUser = await requireRole(ctx, ["admin"]);
+        
+        const assignment = await ctx.db.get(args.assignmentId);
+        if (!assignment) throw new Error("Assignment not found");
+        
+        // Verify assignment is in admin's org
+        if (assignment.orgId !== adminUser.orgId) {
+            throw new Error("Forbidden");
+        }
+        
+        await ctx.db.delete(args.assignmentId);
+        return null;
+    },
+});
+```
+
+### Get Staff Assignments
+
+```typescript
+export const getStaffAssignments = query({
+    args: { staffUserId: v.id("users") },
+    handler: async (ctx, args) => {
+        const user = await requireRole(ctx, ["admin"]);
+        
+        // Verify staff user is in same org
+        const staffUser = await ctx.db.get(args.staffUserId);
+        if (!staffUser || staffUser.orgId !== user.orgId) {
+            throw new Error("Staff user not found");
+        }
+        
+        const assignments = await ctx.db
+            .query("staffCustomerAssignments")
+            .withIndex("by_user", (q) => q.eq("userId", args.staffUserId))
+            .collect();
+        
+        // Enrich with customer data
+        const enriched = [];
+        for (const assignment of assignments) {
+            const customer = await ctx.db.get(assignment.customerId);
+            if (customer) {
+                enriched.push({
+                    ...assignment,
+                    customer,
+                });
+            }
+        }
+        
+        return enriched;
+    },
+});
+```
+
+## Org Creation Flow
+
+### Create Organization
+
+```typescript
+export const createOrg = mutation({
+    args: {
+        name: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const workOsUserId = ctx.auth?.userId;
+        if (!workOsUserId) throw new Error("Unauthorized");
+        
+        // Organization created in WorkOS via frontend
+        // This mutation stores the Convex-side data
+        
+        // For now, assume org already created in WorkOS
+        // In practice, you'd integrate with WorkOS API
+        const workOsOrgId = await createWorkOSOrg(args.name, workOsUserId);
+        
+        const orgId = await ctx.db.insert("orgs", {
+            workOsOrgId,
+            name: args.name,
+            status: "trialing",
+            maxCustomers: 3,    // Free tier defaults
+            maxStaff: 2,
+            maxClients: 10,
+        });
+        
+        // Create user record linked to this org
+        await ctx.db.insert("users", {
+            workOsUserId,
+            orgId,
+            role: "admin",
+            email: "", // Get from WorkOS
+        });
+        
+        return orgId;
+    },
+});
+```
+
+## Client User Management
+
+### Invite Client User
+
+```typescript
+export const inviteClientUser = mutation({
+    args: {
+        email: v.string(),
+        customerId: v.id("customers"),
+    },
+    handler: async (ctx, args) => {
+        const user = await requireRole(ctx, ["admin", "staff"]);
+        
+        // Verify customer access
+        const customer = await ctx.db.get(args.customerId);
+        if (!customer) throw new Error("Customer not found");
+        
+        if (user.role === "staff") {
+            const hasAccess = await checkCustomerAccess(ctx, user, args.customerId);
+            if (!hasAccess) throw new Error("No access to this customer");
+        }
+        
+        // Check usage cap
+        const clientCount = await ctx.db
+            .query("users")
+            .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
+            .collect();
+        
+        const org = await ctx.db.get(customer.orgId);
+        if (clientCount.length >= org.maxClients) {
+            throw new Error("Client user limit reached for this customer");
+        }
+        
+        // Create invitation (WorkOS handles the actual invite)
+        // Store pending client user
+        const pendingId = await ctx.db.insert("pendingInvites", {
+            email: args.email,
+            customerId: args.customerId,
+            orgId: customer.orgId,
+            role: "client",
+            invitedBy: user._id,
+            invitedAt: Date.now(),
+        });
+        
+        // Trigger WorkOS invitation via action
+        await ctx.scheduler.runAfter(0, internal.auth.sendClientInvitation, {
+            email: args.email,
+            customerId: args.customerId,
+            orgId: customer.orgId,
+        });
+        
+        return pendingId;
+    },
+});
+```
+
+## Frontend Patterns
+
+### Use Accessible Customers Hook
+
+```typescript
+// src/hooks/useCustomers.ts
+import { useQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
+import { api } from "../../convex/_generated/api";
+
+export function useCustomers() {
+    return useQuery(convexQuery(api.customers.getAccessible, {}));
+}
+```
+
+### Customer Guard Component
+
+```typescript
+// src/components/CustomerGuard.tsx
+import { useAuth } from "@workos/authkit-tanstack-react-start";
+import { useQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
+import { api } from "../../convex/_generated/api";
+
+interface CustomerGuardProps {
+    customerId: string;
+    children: React.ReactNode;
+    fallback?: React.ReactNode;
+}
+
+export function CustomerGuard({ 
+    customerId, 
+    children, 
+    fallback = <div>Access denied</div> 
+}: CustomerGuardProps) {
+    const { orgMembership } = useAuth();
+    const role = orgMembership?.role?.slug;
+    
+    // Admin always has access
+    if (role === "admin") return <>{children}</>;
+    
+    // Check access for staff/client
+    const { data: hasAccess } = useQuery(
+        convexQuery(api.customers.checkAccess, { customerId })
+    );
+    
+    if (!hasAccess) return <>{fallback}</>;
+    return <>{children}</>;
+}
+```
+
+## Common Pitfalls
+
+1. **Always verify org membership** - Don't trust client-side data for access control
+2. **Use indexes for scoped queries** - Always filter by orgId first
+3. **Check role on every mutation** - Even if UI hides actions, verify server-side
+4. **Handle deleted customers** - Soft delete or cascade properly
+5. **Validate customer access** - Staff can only see assigned customers

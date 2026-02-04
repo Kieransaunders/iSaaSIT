@@ -1,0 +1,92 @@
+---
+title: Role-Based Access Control
+description: Understanding RBAC in iSaaSIT
+---
+
+iSaaSIT implements role-based access control (RBAC) with three distinct roles.
+
+## Roles Overview
+
+| Role | Scope | Use Case |
+|------|-------|----------|
+| **Admin** | Full organization access | Agency owners, managers |
+| **Staff** | Assigned customers only | Account managers, support |
+| **Client** | Own customer only | Client company users |
+
+## Permission Matrix
+
+| Action | Admin | Staff | Client |
+|--------|-------|-------|--------|
+| Manage billing | ✅ | ❌ | ❌ |
+| Invite users | ✅ | ❌ | ❌ |
+| View all customers | ✅ | ❌ | ❌ |
+| View assigned customers | ✅ | ✅ | ❌ |
+| Manage own customer | ✅ | ✅ | ✅ |
+| View own data | ✅ | ✅ | ✅ |
+
+## Implementation
+
+### Checking Roles in Convex
+
+```typescript
+export const getCustomer = query({
+  args: { customerId: v.id('customers') },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    const customer = await ctx.db.get(args.customerId);
+    
+    // Admin can see all
+    if (user.role === 'admin') {
+      return customer;
+    }
+    
+    // Staff can see assigned customers
+    if (user.role === 'staff') {
+      const assignment = await ctx.db
+        .query('staffCustomerAssignments')
+        .withIndex('by_staff_customer', q => 
+          q.eq('staffUserId', user._id)
+            .eq('customerId', args.customerId)
+        )
+        .unique();
+        
+      if (assignment) return customer;
+    }
+    
+    // Client can only see their own customer
+    if (user.role === 'client' && user.customerId === args.customerId) {
+      return customer;
+    }
+    
+    return null; // Access denied
+  },
+});
+```
+
+### Frontend Role Checks
+
+```tsx
+function CustomerView({ customerId }: { customerId: string }) {
+  const { user } = useAuth();
+  const { data: customer } = useQuery(api.customers.get, { customerId });
+  
+  if (!customer) return <AccessDenied />;
+  
+  return (
+    <div>
+      <h1>{customer.name}</h1>
+      {user.role !== 'client' && (
+        <AdminActions customerId={customerId} />
+      )}
+    </div>
+  );
+}
+```
+
+## Data Isolation
+
+RBAC ensures proper data isolation:
+
+1. **Row-level security** - Queries filter by user role and assignments
+2. **API-level enforcement** - Mutations validate permissions
+3. **UI-level hiding** - Components conditionally render based on role

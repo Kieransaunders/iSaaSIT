@@ -1,0 +1,533 @@
+---
+description: UI patterns - Tailwind v4, shadcn/ui, component organization
+globs: src/**/*.tsx, src/**/*.css
+alwaysApply: true
+---
+
+# 6. UI Components and Styling
+
+This document covers UI patterns, component organization, and styling conventions for iSaaSIT.
+
+## Technology Stack
+
+- **Tailwind CSS v4** - Utility-first styling with CSS-first configuration
+- **shadcn/ui** (planned) - Accessible, reusable component primitives
+- **React 19** - Latest React features
+
+## Tailwind v4 Setup
+
+### Configuration
+
+Tailwind v4 uses CSS-based configuration in `src/app.css`:
+
+```css
+/* src/app.css */
+@import "tailwindcss";
+
+@theme {
+  /* Custom colors */
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #64748b;
+  
+  /* Custom fonts */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  /* Custom spacing */
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+  
+  /* Custom animations */
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.4s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+```
+
+### Import Order
+
+```css
+/* 1. Tailwind */
+@import "tailwindcss";
+
+/* 2. Theme variables */
+@theme { ... }
+
+/* 3. Base styles */
+@layer base {
+  html { @apply antialiased; }
+  body { @apply bg-gray-50 text-gray-900; }
+}
+
+/* 4. Component styles */
+@layer components {
+  .btn { @apply px-4 py-2 rounded-md font-medium; }
+}
+
+/* 5. Utility styles */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
+```
+
+## Component Organization
+
+### Feature-Based Structure
+
+```
+src/
+├── components/
+│   ├── ui/              # Reusable UI primitives (shadcn/ui)
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   └── card.tsx
+│   ├── layout/          # Layout components
+│   │   ├── sidebar.tsx
+│   │   ├── header.tsx
+│   │   └── navigation.tsx
+│   └── shared/          # Shared feature components
+│       ├── loading.tsx
+│       ├── error.tsx
+│       └── empty-state.tsx
+├── features/            # Feature-specific components
+│   ├── customers/
+│   │   ├── customer-list.tsx
+│   │   ├── customer-card.tsx
+│   │   └── customer-form.tsx
+│   ├── billing/
+│   └── auth/
+└── hooks/               # Custom hooks
+    ├── use-customers.ts
+    └── use-billing.ts
+```
+
+### Component File Structure
+
+```typescript
+// src/features/customers/customer-card.tsx
+import { useState } from "react";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useCustomers } from "@/hooks/use-customers";
+
+// Types
+interface CustomerCardProps {
+    customerId: string;
+    onEdit?: (id: string) => void;
+}
+
+// Component
+export function CustomerCard({ customerId, onEdit }: CustomerCardProps) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const { data: customer } = useCustomers();
+    
+    return (
+        <Card>
+            <CardHeader>
+                <h3>{customer?.name}</h3>
+            </CardHeader>
+            <CardContent>
+                {/* Content */}
+            </CardContent>
+        </Card>
+    );
+}
+
+export default CustomerCard;
+```
+
+## Common UI Patterns
+
+### Loading States
+
+```typescript
+// Components
+export function LoadingSpinner({ className }: { className?: string }) {
+    return (
+        <div className={cn("animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full", className)} />
+    );
+}
+
+export function LoadingPage() {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <LoadingSpinner className="h-8 w-8" />
+        </div>
+    );
+}
+
+export function LoadingCard() {
+    return (
+        <div className="animate-pulse bg-gray-100 rounded-lg h-32" />
+    );
+}
+```
+
+### Error States
+
+```typescript
+interface ErrorDisplayProps {
+    error: Error;
+    retry?: () => void;
+}
+
+export function ErrorDisplay({ error, retry }: ErrorDisplayProps) {
+    return (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h3 className="text-red-800 font-medium">Something went wrong</h3>
+            <p className="text-red-600 text-sm mt-1">{error.message}</p>
+            {retry && (
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={retry}
+                    className="mt-3"
+                >
+                    Try again
+                </Button>
+            )}
+        </div>
+    );
+}
+```
+
+### Empty States
+
+```typescript
+interface EmptyStateProps {
+    title: string;
+    description?: string;
+    action?: {
+        label: string;
+        onClick: () => void;
+    };
+}
+
+export function EmptyState({ title, description, action }: EmptyStateProps) {
+    return (
+        <div className="text-center py-12">
+            <div className="mx-auto h-12 w-12 text-gray-400">
+                {/* Icon */}
+            </div>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">{title}</h3>
+            {description && (
+                <p className="mt-1 text-sm text-gray-500">{description}</p>
+            )}
+            {action && (
+                <div className="mt-6">
+                    <Button onClick={action.onClick}>{action.label}</Button>
+                </div>
+            )}
+        </div>
+    );
+}
+```
+
+## Form Patterns
+
+### Basic Form
+
+```typescript
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useConvexMutation } from "@convex-dev/react-query";
+import { api } from "@/convex/_generated/api";
+
+interface CustomerFormData {
+    name: string;
+    email: string;
+}
+
+export function CustomerForm({ onSuccess }: { onSuccess?: () => void }) {
+    const [formData, setFormData] = useState<CustomerFormData>({
+        name: "",
+        email: "",
+    });
+    const [errors, setErrors] = useState<Partial<CustomerFormData>>({});
+    
+    const createCustomer = useConvexMutation(api.customers.create);
+    
+    const validate = (): boolean => {
+        const newErrors: Partial<CustomerFormData> = {};
+        if (!formData.name) newErrors.name = "Name is required";
+        if (!formData.email) newErrors.email = "Email is required";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = "Invalid email";
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        if (!validate()) return;
+        
+        try {
+            await createCustomer.mutateAsync(formData);
+            onSuccess?.();
+        } catch (error) {
+            // Handle error
+        }
+    };
+    
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+                <label className="block text-sm font-medium">Name</label>
+                <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData(d => ({ ...d, name: e.target.value }))}
+                    className={cn(
+                        "mt-1 block w-full rounded-md border px-3 py-2",
+                        errors.name ? "border-red-500" : "border-gray-300"
+                    )}
+                />
+                {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                )}
+            </div>
+            
+            <Button 
+                type="submit" 
+                disabled={createCustomer.isPending}
+            >
+                {createCustomer.isPending ? "Creating..." : "Create Customer"}
+            </Button>
+        </form>
+    );
+}
+```
+
+## Responsive Design
+
+### Breakpoint Reference
+
+```
+sm: 640px   - Small devices
+md: 768px   - Tablets
+lg: 1024px  - Small laptops
+xl: 1280px  - Desktops
+2xl: 1536px - Large screens
+```
+
+### Responsive Patterns
+
+```typescript
+// Mobile-first approach
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {/* Cards */}
+</div>
+
+// Responsive sidebar
+<div className="hidden md:block w-64 shrink-0">
+    <Sidebar />
+</div>
+
+// Responsive padding
+<div className="p-4 md:p-6 lg:p-8">
+    Content
+</div>
+
+// Responsive text
+<h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">
+    Title
+</h1>
+```
+
+## Dark Mode
+
+### Setup
+
+```css
+/* src/app.css */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+  
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+}
+```
+
+### Dark Mode Classes
+
+```typescript
+<div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    Content
+</div>
+```
+
+## Utility Functions
+
+### cn() - Class Name Merging
+
+```typescript
+// src/lib/utils.ts
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
+```
+
+Usage:
+```typescript
+<div className={cn(
+    "base-classes",
+    condition && "conditional-class",
+    errors.name ? "border-red-500" : "border-gray-300"
+)} />
+```
+
+## shadcn/ui Integration (Planned)
+
+### Installation
+
+When ready to add shadcn/ui:
+
+```bash
+npx shadcn@latest init
+npx shadcn add button card input
+```
+
+### Component Location
+
+Components will be installed to `src/components/ui/` by default.
+
+### Customization
+
+```typescript
+// src/components/ui/button.tsx
+import { cn } from "@/lib/utils";
+
+const buttonVariants = cva(
+    "inline-flex items-center justify-center rounded-md font-medium",
+    {
+        variants: {
+            variant: {
+                default: "bg-primary text-white hover:bg-primary-dark",
+                outline: "border border-gray-300 bg-transparent",
+                ghost: "hover:bg-gray-100",
+            },
+            size: {
+                default: "h-10 px-4 py-2",
+                sm: "h-8 px-3 text-sm",
+                lg: "h-12 px-6",
+            },
+        },
+        defaultVariants: {
+            variant: "default",
+            size: "default",
+        },
+    }
+);
+```
+
+## Layout Components
+
+### Page Layout
+
+```typescript
+// src/components/layout/page-layout.tsx
+interface PageLayoutProps {
+    title: string;
+    description?: string;
+    actions?: React.ReactNode;
+    children: React.ReactNode;
+}
+
+export function PageLayout({ 
+    title, 
+    description, 
+    actions, 
+    children 
+}: PageLayoutProps) {
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="md:flex md:items-center md:justify-between mb-8">
+                <div>
+                    <h1 className="text-2xl font-bold">{title}</h1>
+                    {description && (
+                        <p className="mt-1 text-sm text-gray-500">{description}</p>
+                    )}
+                </div>
+                {actions && <div className="mt-4 md:mt-0">{actions}</div>}
+            </div>
+            {children}
+        </div>
+    );
+}
+```
+
+### Dashboard Layout
+
+```typescript
+// src/components/layout/dashboard-layout.tsx
+import { Sidebar } from "./sidebar";
+import { Header } from "./header";
+
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <Header />
+            <div className="flex">
+                <Sidebar className="hidden lg:block w-64 shrink-0" />
+                <main className="flex-1 min-w-0">
+                    {children}
+                </main>
+            </div>
+        </div>
+    );
+}
+```
+
+## Animation Patterns
+
+### Transition Patterns
+
+```typescript
+// Fade in
+<div className="animate-in fade-in duration-500">
+    Content
+</div>
+
+// Slide up
+<div className="animate-in slide-in-from-bottom-4 duration-300">
+    Content
+</div>
+
+// Scale
+<button className="transition-transform hover:scale-105 active:scale-95">
+    Click me
+</button>
+```
+
+### Loading Skeleton
+
+```typescript
+export function SkeletonCard() {
+    return (
+        <div className="animate-pulse bg-white rounded-lg p-4 space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-1/4" />
+            <div className="h-8 bg-gray-200 rounded" />
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+        </div>
+    );
+}
+```

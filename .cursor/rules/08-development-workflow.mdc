@@ -1,0 +1,468 @@
+---
+description: Development workflow - common tasks, debugging, best practices
+globs: 
+alwaysApply: true
+---
+
+# 8. Development Workflow
+
+This document covers common development tasks, debugging techniques, and best practices for iSaaSIT.
+
+## Development Commands
+
+```bash
+# Start development (runs frontend + backend in parallel)
+npm run dev
+
+# Start only frontend dev server
+npm run dev:frontend
+
+# Start only Convex backend
+npm run dev:backend
+
+# Build for production
+npm run build
+
+# Start production server
+npm run start
+
+# Run type checking and linting
+npm run lint
+
+# Format code with Prettier
+npm run format
+
+# Initialize Convex (first-time setup)
+npx convex dev
+
+# Deploy Convex functions
+npx convex deploy
+
+# Generate route tree (TanStack Router)
+npx tanstack-router generate
+```
+
+## Common Tasks
+
+### Adding a New Route
+
+1. **Create the route file**:
+```bash
+touch src/routes/_authenticated/my-feature.tsx
+```
+
+2. **Implement the route**:
+```typescript
+// src/routes/_authenticated/my-feature.tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { PageLayout } from "@/components/layout/page-layout";
+
+export const Route = createFileRoute("/_authenticated/my-feature")({
+    component: MyFeaturePage,
+});
+
+function MyFeaturePage() {
+    return (
+        <PageLayout title="My Feature">
+            <div>Content here</div>
+        </PageLayout>
+    );
+}
+```
+
+3. **Restart dev server** (route tree auto-generates)
+
+4. **Navigate to the route** at `http://localhost:3000/my-feature`
+
+### Adding a Convex Function
+
+1. **Create or edit a Convex file**:
+```bash
+# Option 1: Add to existing file
+touch convex/myFeature.ts
+
+# Option 2: Create feature directory
+mkdir convex/myFeature
+touch convex/myFeature/index.ts
+```
+
+2. **Implement the function**:
+```typescript
+// convex/myFeature.ts
+import { query, mutation } from "./_generated/server";
+import { v } from "convex/values";
+
+export const list = query({
+    args: { orgId: v.id("orgs") },
+    handler: async (ctx, args) => {
+        return await ctx.db
+            .query("items")
+            .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+            .collect();
+    },
+});
+
+export const create = mutation({
+    args: {
+        orgId: v.id("orgs"),
+        name: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.insert("items", {
+            orgId: args.orgId,
+            name: args.name,
+        });
+    },
+});
+```
+
+3. **Use in frontend**:
+```typescript
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { api } from "@/convex/_generated/api";
+
+function MyComponent() {
+    const { data } = useQuery(convexQuery(api.myFeature.list, { orgId }));
+    const create = useConvexMutation(api.myFeature.create);
+}
+```
+
+### Adding Schema
+
+1. **Edit `convex/schema.ts`**:
+```typescript
+export default defineSchema({
+    // ... existing tables
+    
+    newItems: defineTable({
+        orgId: v.id("orgs"),
+        name: v.string(),
+        status: v.union(v.literal("active"), v.literal("inactive")),
+    })
+        .index("by_org", ["orgId"])
+        .index("by_org_status", ["orgId", "status"]),
+});
+```
+
+2. **Deploy to Convex**:
+```bash
+npx convex dev
+# Convex will prompt for migration confirmation
+```
+
+### Protecting a Route
+
+1. **Add to `_authenticated` layout** (simplest):
+```
+src/routes/_authenticated/my-route.tsx
+```
+
+2. **Or create custom protection**:
+```typescript
+// src/routes/_authenticated/_admin-only.tsx
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { getAuth } from "@workos/authkit-tanstack-react-start";
+
+export const Route = createFileRoute("/_authenticated/_admin-only")({
+    beforeLoad: async () => {
+        const { orgMembership } = await getAuth();
+        if (orgMembership?.role?.slug !== "admin") {
+            throw redirect({ to: "/dashboard" });
+        }
+    },
+    component: () => <Outlet />,
+});
+```
+
+### Adding shadcn/ui Component
+
+When ready to add shadcn/ui:
+
+```bash
+# Initialize (one-time)
+npx shadcn@latest init
+
+# Add components
+npx shadcn add button
+npx shadcn add card input label
+npx shadcn add dialog dropdown-menu
+
+# Use in code
+import { Button } from "@/components/ui/button";
+```
+
+## Debugging
+
+### Convex Dashboard
+
+```bash
+# Open Convex dashboard
+npx convex dashboard
+```
+
+Features:
+- View database tables
+- Run queries
+- View function logs
+- Monitor performance
+
+### Browser DevTools
+
+**TanStack Router DevTools**:
+```typescript
+// src/routes/__root.tsx
+import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+
+function RootComponent() {
+    return (
+        <>
+            <Outlet />
+            <TanStackRouterDevtools />
+        </>
+    );
+}
+```
+
+**React Query DevTools**:
+```typescript
+// Already included in ConvexProviderWithAuth
+// Look for the floating icon in bottom-right corner
+```
+
+### Common Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Cannot find module 'convex/_generated/api'` | Convex types not generated | Run `npx convex dev` |
+| `Route not found` | Route tree not updated | Restart dev server |
+| `Unauthorized` in Convex | JWT validation failed | Check `auth.config.ts` and WorkOS config |
+| `Cannot read property of undefined` | Convex query loading | Add loading states |
+| `Module not found` for imports | Path alias issue | Check `tsconfig.json` paths |
+
+### Logging
+
+**Convex Logs**:
+```typescript
+export const myQuery = query({
+    args: {},
+    handler: async (ctx) => {
+        console.log("Query started");
+        const result = await ctx.db.query("items").take(10);
+        console.log("Found items:", result.length);
+        return result;
+    },
+});
+```
+
+**View logs**:
+```bash
+npx convex dev --verbose
+```
+
+## Testing
+
+### Manual Testing Checklist
+
+**Authentication**:
+- [ ] Sign in with WorkOS
+- [ ] Protected routes redirect when not authenticated
+- [ ] Role-based access works (Admin/Staff/Client)
+- [ ] Sign out clears session
+
+**Multi-tenancy**:
+- [ ] Users only see their org data
+- [ ] Staff only see assigned customers
+- [ ] Clients only see their customer
+- [ ] Admins can access everything
+
+**Billing**:
+- [ ] Usage caps enforced
+- [ ] Upgrade flow works
+- [ ] Webhooks update subscription
+
+### Convex Functions Testing
+
+```typescript
+// Test query directly in Convex dashboard
+// Go to Functions → Your Function → Run
+
+// Example test args
+{
+    "orgId": "kx..."
+}
+```
+
+## Code Style
+
+### Prettier Configuration
+
+```javascript
+// prettier.config.mjs
+export default {
+    singleQuote: true,
+    trailingComma: 'all',
+    printWidth: 120,
+    semi: true,
+};
+```
+
+### Import Order
+
+```typescript
+// 1. React/_framework imports
+import { useState } from "react";
+
+// 2. Third-party libraries
+import { useQuery } from "@tanstack/react-query";
+
+// 3. Internal absolute imports
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+
+// 4. Internal relative imports
+import { useCustomers } from "./hooks/use-customers";
+
+// 5. Types
+import type { Customer } from "@/types";
+```
+
+### Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Components | PascalCase | `CustomerCard` |
+| Functions | camelCase | `getCustomers` |
+| Constants | UPPER_SNAKE | `MAX_RETRIES` |
+| Files (components) | PascalCase | `CustomerCard.tsx` |
+| Files (utils) | camelCase | `formatDate.ts` |
+| Convex tables | camelCase | `customers` |
+| Convex functions | camelCase | `getCustomers` |
+| Route files | kebab-case | `customer-detail.tsx` |
+
+## Environment Variables
+
+### Required in `.env.local`
+
+```bash
+# WorkOS AuthKit
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_test_xxx
+WORKOS_COOKIE_PASSWORD=xxx  # Min 32 characters
+WORKOS_REDIRECT_URI=http://localhost:3000/callback
+
+# Convex
+VITE_CONVEX_URL=https://xxx.convex.cloud
+
+# Lemon Squeezy (when implementing billing)
+LEMON_SQUEEZY_API_KEY=xxx
+LEMON_SQUEEZY_STORE_ID=xxx
+LEMON_SQUEEZY_WEBHOOK_SECRET=xxx
+```
+
+### Adding New Environment Variables
+
+1. **Add to `.env.local`**:
+```bash
+MY_NEW_VAR=value
+```
+
+2. **For frontend access** (Vite):
+```bash
+VITE_MY_NEW_VAR=value  # Must start with VITE_
+```
+
+3. **For Convex secrets**:
+```bash
+npx convex env set MY_SECRET value
+```
+
+4. **Update `.env.local.example`** for documentation
+
+## Deployment
+
+### Convex Deployment
+
+```bash
+# Deploy to production
+npx convex deploy
+
+# Deploy to preview environment
+npx convex deploy --preview-name my-branch
+```
+
+### Frontend Deployment (Netlify)
+
+```bash
+# Build
+npm run build
+
+# Deploy folder: dist
+# Publish directory: dist
+```
+
+### Environment Setup
+
+1. **Development**: Use `.env.local`
+2. **Preview**: Set in Convex dashboard + Netlify
+3. **Production**: Set in Convex dashboard + Netlify
+
+## Performance Tips
+
+### Convex Optimization
+
+- **Use indexes** for all filtered queries
+- **Paginate** large lists (don't use `.collect()` on unbounded queries)
+- **Use internal functions** for shared logic
+- **Avoid N+1 queries** - fetch related data efficiently
+
+### React Optimization
+
+- **Use `select`** in `useRouteContext` to prevent unnecessary re-renders
+- **Memoize expensive calculations** with `useMemo`
+- **Use React Query caching** - don't refetch on every mount
+
+```typescript
+// Good: Select only what you need
+const { user } = Route.useRouteContext({
+    select: (s) => ({ user: s.user })
+});
+
+// Bad: Causes re-render on any context change
+const context = Route.useRouteContext();
+```
+
+## Troubleshooting Guide
+
+### "Route not found" errors
+1. Check file is in `src/routes/`
+2. Verify file exports `Route` from `createFileRoute`
+3. Restart dev server
+4. Check `src/routeTree.gen.ts` was updated
+
+### Convex auth issues
+1. Verify `auth.config.ts` is correct
+2. Check WorkOS credentials in `.env.local`
+3. Ensure `convex.json` has auth configuration
+4. Check browser devtools for JWT errors
+
+### Type errors
+1. Run `npm run lint`
+2. Check `convex/_generated/` is up to date (`npx convex dev`)
+3. Verify `routeTree.gen.ts` exists
+4. Check TypeScript version matches project
+
+### Build failures
+1. Delete `node_modules` and reinstall
+2. Clear TypeScript cache: `rm -rf node_modules/.cache`
+3. Check for circular dependencies
+4. Verify all imports resolve
+
+## Resources
+
+- [Convex Docs](https://docs.convex.dev/)
+- [TanStack Start](https://tanstack.com/start)
+- [TanStack Router](https://tanstack.com/router)
+- [WorkOS AuthKit](https://workos.com/docs/authkit)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [Lemon Squeezy Docs](https://docs.lemonsqueezy.com/)

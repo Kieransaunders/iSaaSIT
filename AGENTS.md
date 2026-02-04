@@ -2,6 +2,44 @@
 
 This document provides essential context for AI coding agents working on the iSaaSIT project.
 
+## Quick Reference
+
+| Resource | Location | Purpose |
+|----------|----------|---------|
+| **Project Overview** | `LLM.txt` (root) | Quick context for any LLM |
+| **Detailed Rules** | `.cursor/rules/*.mdc` | Specific patterns by topic |
+| **Example Prompts** | `.cursor/example-prompts.md` | Copy-paste prompts for tasks |
+| **Requirements** | `.planning/PROJECT.md` | Feature requirements & status |
+
+## AI-Assisted Development
+
+This project includes structured rules for AI coding assistants to ensure consistent, high-quality contributions.
+
+### For Cursor Users
+
+The `.cursor/rules/*.mdc` files provide contextual guidance based on file type:
+
+| Rule File | Topic | Applies To |
+|-----------|-------|------------|
+| `01-project-overview.mdc` | Project basics, stack overview | All files |
+| `02-convex-patterns.mdc` | Backend patterns, schema, queries | `convex/**/*.ts` |
+| `03-tanstack-router.mdc` | Routing conventions | `src/routes/**/*.tsx` |
+| `04-authentication.mdc` | WorkOS AuthKit patterns | `src/**/*.tsx` |
+| `05-multi-tenancy.mdc` | Orgs, roles, data isolation | `convex/**/*.ts`, `src/**/*.tsx` |
+| `06-ui-components.mdc` | Tailwind v4, shadcn/ui | `src/**/*.tsx`, `src/**/*.css` |
+| `07-billing-integration.mdc` | Lemon Squeezy patterns | `convex/**/*.ts` |
+| `08-development-workflow.mdc` | Common tasks, debugging | All files |
+
+### For Claude / Other LLMs
+
+Use the structured prompts in `.cursor/example-prompts.md` for common tasks like:
+- Initial project setup / PRD
+- Feature implementation
+- Convex function creation
+- Route/page creation
+- Bug fixes
+- Refactoring
+
 ## Project Overview
 
 **iSaaSIT** is an open-source SaaS starter kit designed for agencies and freelancers who need a repeatable client project template. It provides a multi-tenant foundation where:
@@ -29,7 +67,7 @@ This document provides essential context for AI coding agents working on the iSa
 - **WorkOS AuthKit** - Authentication via JWT tokens
 - **TypeScript 5.9** - Type-safe development
 
-### Planned Integrations (Not Yet Implemented)
+### Planned Integrations
 - **Lemon Squeezy** - Billing and subscriptions (Merchant of Record)
 - **shadcn/ui** - Component library
 
@@ -56,9 +94,17 @@ This document provides essential context for AI coding agents working on the iSa
 │   ├── auth.config.ts           # WorkOS JWT auth configuration
 │   ├── _generated/              # Auto-generated Convex types
 │   └── README.md                # Convex documentation
+├── .cursor/                     # AI coding assistant rules
+│   ├── rules/                   # Contextual rule files (*.mdc)
+│   └── example-prompts.md       # Copy-paste prompts
+├── docs-site/                   # Documentation site (Starlight/Astro)
+│   ├── astro.config.mjs         # Starlight configuration
+│   ├── src/content/docs/        # Documentation content (MDX)
+│   └── package.json             # Docs dependencies
 ├── .planning/                   # Project planning documents
 │   ├── PROJECT.md               # Detailed project requirements
 │   └── config.json              # Planning configuration
+├── LLM.txt                      # Root-level LLM context
 ├── package.json                 # Dependencies and scripts
 ├── vite.config.ts               # Vite configuration
 ├── convex.json                  # Convex deployment config with AuthKit
@@ -78,11 +124,20 @@ npm run dev:frontend
 # Start only Convex backend
 npm run dev:backend
 
+# Start documentation site dev server
+npm run dev:docs
+
 # Build for production
 npm run build
 
+# Build documentation site
+npm run build:docs
+
 # Start production server
 npm run start
+
+# Preview built documentation
+npm run preview:docs
 
 # Run type checking and linting
 npm run lint
@@ -223,6 +278,8 @@ VITE_CONVEX_URL=https://xxx.convex.cloud
 2. Export `Route` using `createFileRoute()`
 3. The route tree will be auto-generated on next dev server start
 
+**Reference:** `.cursor/rules/03-tanstack-router.mdc`
+
 ### Adding a Convex Function
 
 1. Add queries/mutations/actions to `convex/myFunctions.ts` or create new files
@@ -230,9 +287,13 @@ VITE_CONVEX_URL=https://xxx.convex.cloud
 3. Use `v` from `convex/values` for argument validation
 4. Run `npx convex dev` to deploy and regenerate types
 
+**Reference:** `.cursor/rules/02-convex-patterns.mdc`
+
 ### Protecting a Route
 
 Place the route file under `routes/_authenticated/` or add protection to an existing layout.
+
+**Reference:** `.cursor/rules/04-authentication.mdc`
 
 ## Deployment Notes
 
@@ -256,3 +317,7 @@ As of the last update, the following features are:
 - ⏳ **Planned:** Lemon Squeezy billing integration, shadcn/ui components, usage cap enforcement
 
 See `.planning/PROJECT.md` for detailed requirements and progress tracking.
+
+---
+
+*For AI coding assistance, refer to `.cursor/rules/*.mdc` and `.cursor/example-prompts.md`*

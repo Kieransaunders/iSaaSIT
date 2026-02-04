@@ -1,0 +1,136 @@
+---
+title: Architecture
+description: Understanding the iSaaSIT architecture and data model
+---
+
+iSaaSIT follows a multi-tenant architecture designed for agencies managing multiple client companies.
+
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     iSaaSIT Platform                     │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
+│  │   Agency    │  │   Agency    │  │     Agency      │  │
+│  │   (Org 1)   │  │   (Org 2)   │  │     (Org 3)     │  │
+│  │             │  │             │  │                 │  │
+│  │ ┌─────────┐ │  │ ┌─────────┐ │  │ ┌─────────────┐ │  │
+│  │ │Client A │ │  │ │Client X │ │  │ │  Client M   │ │  │
+│  │ ├─────────┤ │  │ ├─────────┤ │  │ ├─────────────┤ │  │
+│  │ │Client B │ │  │ │Client Y │ │  │ │  Client N   │ │  │
+│  │ └─────────┘ │  │ └─────────┘ │  │ └─────────────┘ │  │
+│  └─────────────┘  └─────────────┘  └─────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Data Model
+
+### Core Entities
+
+| Entity | Description | Managed By |
+|--------|-------------|------------|
+| **Org** | Agency organization | WorkOS (org + membership) + Convex (subscription) |
+| **Customer** | Agency's client company | Convex table (linked to orgId) |
+| **User** | End user | WorkOS; linked to customerId if role = Client |
+| **StaffCustomerAssignment** | Maps Staff to accessible Customers | Convex table |
+
+### Entity Relationships
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│    Org      │────▶│  Customer   │◀────│    User     │
+│  (Agency)   │     │   (Client)  │     │   (Client)  │
+└──────┬──────┘     └─────────────┘     └─────────────┘
+       │
+       │         ┌─────────────────┐
+       └────────▶│ Membership      │
+                 │ (Admin/Staff)   │
+                 └────────┬────────┘
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │ StaffCustomer   │
+                 │  Assignment     │
+                 └─────────────────┘
+```
+
+## Authentication Flow
+
+iSaaSIT uses **WorkOS AuthKit** for authentication:
+
+1. **User Sign In** → Redirected to WorkOS AuthKit
+2. **WorkOS Auth** → Validates credentials, issues JWT
+3. **Convex Validation** → JWT validated via `auth.config.ts`
+4. **Session Established** → User context available in app
+
+### Auth Hooks
+
+- `useAuth()` - For client components
+- `getAuth()` - For server loaders
+
+## Route Protection
+
+Protected routes use the `_authenticated` layout:
+
+```typescript
+// routes/_authenticated.tsx
+export const Route = createFileRoute('/_authenticated')({
+  loader: async ({ location }) => {
+    const { user } = await getAuth();
+    if (!user) {
+      const href = await getSignInUrl({ 
+        data: { returnPathname: location.pathname } 
+      });
+      throw redirect({ href });
+    }
+  },
+});
+```
+
+## Technology Integration
+
+### Convex + React Query
+
+Convex integrates with TanStack React Query for server state:
+
+```typescript
+const convex = new ConvexReactClient(CONVEX_URL);
+const convexQueryClient = new ConvexQueryClient(convex);
+```
+
+### File-Based Routing
+
+TanStack Router uses file-based routing:
+
+| File | Route |
+|------|-------|
+| `routes/index.tsx` | `/` |
+| `routes/callback.tsx` | `/callback` |
+| `routes/_authenticated.tsx` | Layout (no URL) |
+| `routes/_authenticated/dashboard.tsx` | `/dashboard` |
+
+## Role-Based Data Isolation
+
+### Admin
+- Can access all organization data
+- Manages billing and subscriptions
+- Invites users and assigns roles
+
+### Staff
+- Only accesses assigned Customers
+- Cannot see other Staff's assignments
+- Limited to standard operations within scope
+
+### Client
+- Only accesses own Customer data
+- Cannot see other Customers in the Org
+- Limited to read-only or specific operations
+
+## Billing Model
+
+Billing is at the **Organization level** (not per-user):
+
+- Provider: Lemon Squeezy (planned)
+- Caps enforced: `maxCustomers`, `maxStaff`, `maxClients`
+- Plan metadata syncs from subscription

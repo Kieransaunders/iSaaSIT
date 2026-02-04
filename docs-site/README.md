@@ -1,49 +1,70 @@
-# Starlight Starter Kit: Basics
+# iSaaSIT Documentation
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+This is the documentation site for iSaaSIT, built with [Starlight](https://starlight.astro.build/).
 
-```
-npm create astro@latest -- --template starlight
-```
+## Development
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+From the `docs-site` directory:
 
-## 🚀 Project Structure
+```bash
+# Install dependencies
+npm install
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
-
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+# Start dev server
+npm run dev
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+Or from the project root:
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+```bash
+# Start docs dev server
+npm run dev:docs
+```
 
-Static assets, like favicons, can be placed in the `public/` directory.
+The dev server will start at `http://localhost:4321`.
 
-## 🧞 Commands
+## Building
 
-All commands are run from the root of the project, from a terminal:
+```bash
+# Build the docs
+npm run build:docs
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+# Preview the build
+npm run preview:docs
+```
 
-## 👀 Want to learn more?
+## Writing Documentation
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+Documentation files are in `src/content/docs/` as MDX files.
+
+### Adding a Page
+
+1. Create a new `.mdx` file in the appropriate directory
+2. Add frontmatter:
+   ```yaml
+   ---
+   title: Page Title
+   description: Brief description
+   ---
+   ```
+3. Write your content using Markdown/MDX
+
+### Sidebar Navigation
+
+Edit `astro.config.mjs` to update the sidebar:
+
+```javascript
+sidebar: [
+  {
+    label: 'Section Name',
+    items: [
+      { label: 'Page Label', slug: 'path/to/page' },
+    ],
+  },
+],
+```
+
+## Learn More
+
+- [Starlight Documentation](https://starlight.astro.build/)
+- [Astro Documentation](https://docs.astro.build)

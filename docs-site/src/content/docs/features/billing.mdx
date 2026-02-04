@@ -1,0 +1,87 @@
+---
+title: Billing
+description: Billing and subscription management in iSaaSIT
+---
+
+Billing in iSaaSIT is handled at the Organization level with usage-based caps.
+
+## Overview
+
+:::caution[Planned Feature]
+Billing integration with Lemon Squeezy is planned but not yet implemented.
+:::
+
+## Billing Model
+
+- **Billing Entity**: Organization (not individual users)
+- **Provider**: Lemon Squeezy (Merchant of Record)
+- **Pricing**: Based on usage caps
+
+## Usage Caps
+
+Each subscription plan defines caps for:
+
+| Cap | Description |
+|-----|-------------|
+| `maxCustomers` | Maximum client companies |
+| `maxStaff` | Maximum staff members |
+| `maxClients` | Maximum client users per customer |
+
+## Planned Implementation
+
+```typescript
+// Organization with subscription data
+organizations: defineTable({
+  // ... other fields
+  lemonSqueezySubscriptionId: v.optional(v.string()),
+  subscriptionStatus: v.string(), // 'active', 'past_due', 'cancelled'
+  planId: v.string(),
+  maxCustomers: v.number(),
+  maxStaff: v.number(),
+  maxClients: v.number(),
+  currentPeriodEnd: v.optional(v.number()),
+})
+```
+
+## Webhook Handling
+
+When implemented, webhooks will handle:
+
+- `subscription_created`
+- `subscription_updated`
+- `subscription_cancelled`
+- `subscription_expired`
+
+## Enforcing Caps
+
+```typescript
+export const createCustomer = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    const org = await getCurrentOrg(ctx);
+    
+    // Check current usage
+    const currentCount = await ctx.db
+      .query('customers')
+      .withIndex('by_org', q => q.eq('orgId', org._id))
+      .collect();
+    
+    // Enforce cap
+    if (currentCount.length >= org.maxCustomers) {
+      throw new Error(
+        `Customer limit reached (${org.maxCustomers}). ` +
+        `Please upgrade your plan.`
+      );
+    }
+    
+    // Create customer...
+  },
+});
+```
+
+## Future Enhancements
+
+- Usage-based pricing (per-seat, per-customer)
+- Add-ons for additional features
+- Annual billing discounts
+- Trial periods

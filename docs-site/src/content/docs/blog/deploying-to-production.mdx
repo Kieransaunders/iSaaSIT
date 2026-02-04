@@ -1,0 +1,113 @@
+---
+title: Deploying to Production
+description: Step-by-step guide to deploying your iSaaSIT application
+date: 2026-02-01
+---
+
+# Deploying iSaaSIT to Production
+
+**Published:** February 1, 2026
+
+Ready to deploy your iSaaSIT application? This guide covers everything you need.
+
+## Deployment Overview
+
+iSaaSIT consists of three parts:
+
+1. **Frontend** - TanStack Start app
+2. **Backend** - Convex serverless functions
+3. **Database** - Convex real-time database
+
+## Deploying Convex
+
+### 1. Deploy Your Backend
+
+```bash
+npx convex deploy
+```
+
+This deploys your schema and functions to Convex's cloud.
+
+### 2. Set Production Environment Variables
+
+In the Convex dashboard:
+
+1. Go to **Settings** → **Environment Variables**
+2. Add your production WorkOS credentials:
+   - `WORKOS_CLIENT_ID`
+   - `WORKOS_API_KEY`
+
+### 3. Configure Auth in Production
+
+Update `convex.json` with your production AuthKit settings.
+
+## Deploying the Frontend
+
+### Option 1: Netlify (Recommended)
+
+1. Connect your GitHub repo to Netlify
+2. Set build command: `npm run build`
+3. Set publish directory: `dist`
+4. Add environment variables in Netlify dashboard
+
+### Option 2: Vercel
+
+```bash
+npm i -g vercel
+vercel --prod
+```
+
+### Required Environment Variables
+
+```bash
+VITE_CONVEX_URL=https://your-project.convex.cloud
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_live_xxx
+WORKOS_COOKIE_PASSWORD=your-production-secret
+WORKOS_REDIRECT_URI=https://yourdomain.com/callback
+```
+
+## Production Checklist
+
+- [ ] Use production WorkOS credentials (sk_live_*)
+- [ ] Use HTTPS redirect URIs
+- [ ] Set strong cookie password
+- [ ] Deploy Convex backend
+- [ ] Configure CORS if needed
+- [ ] Set up monitoring and logging
+- [ ] Configure custom domain
+- [ ] Test authentication flow
+- [ ] Test database operations
+
+## Post-Deployment
+
+### Verify Authentication
+
+1. Sign up as a new user
+2. Verify email confirmation
+3. Test protected routes
+4. Test sign-out
+
+### Monitor Your App
+
+- Check Convex dashboard for errors
+- Monitor WorkOS authentication logs
+- Set up application monitoring (Sentry, etc.)
+
+## Troubleshooting
+
+### "Invalid redirect_uri" Error
+
+Ensure your production domain is added to WorkOS redirect URIs.
+
+### Convex Connection Issues
+
+Verify `VITE_CONVEX_URL` points to your production deployment.
+
+### Auth Not Working
+
+Check that you're using production WorkOS keys (sk_live_*, not sk_test_*).
+
+## Conclusion
+
+Deploying iSaaSIT is straightforward with Convex handling the backend and any static host for the frontend. Follow this checklist to ensure a smooth launch!

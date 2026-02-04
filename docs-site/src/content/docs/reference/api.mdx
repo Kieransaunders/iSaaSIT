@@ -1,0 +1,101 @@
+---
+title: API Reference
+description: API reference for iSaaSIT
+---
+
+## Convex API
+
+### Queries
+
+#### `api.organizations.get`
+
+Get the current user's organization.
+
+**Returns**: `Organization | null`
+
+---
+
+#### `api.customers.list`
+
+List all customers for the current organization.
+
+**Returns**: `Customer[]`
+
+---
+
+#### `api.customers.get`
+
+Get a specific customer by ID.
+
+**Args**:
+| Name | Type | Description |
+|------|------|-------------|
+| `id` | `Id<'customers'>` | Customer ID |
+
+**Returns**: `Customer | null`
+
+### Mutations
+
+#### `api.customers.create`
+
+Create a new customer.
+
+**Args**:
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | `string` | Customer company name |
+| `slug` | `string` | Unique slug for the customer |
+
+**Returns**: `Id<'customers'>`
+
+---
+
+#### `api.customers.update`
+
+Update an existing customer.
+
+**Args**:
+| Name | Type | Description |
+|------|------|-------------|
+| `id` | `Id<'customers'>` | Customer ID |
+| `name` | `string` | New name |
+
+**Returns**: `void`
+
+### Actions
+
+Coming soon...
+
+## React Hooks
+
+### `useAuth()`
+
+Get the current authentication state.
+
+```tsx
+const { user, isLoading, signOut } = useAuth();
+```
+
+**Returns**:
+| Property | Type | Description |
+|----------|------|-------------|
+| `user` | `User \| null` | Current user |
+| `isLoading` | `boolean` | Loading state |
+| `signOut` | `() => void` | Sign out function |
+
+### `useQuery()`
+
+Fetch data from Convex.
+
+```tsx
+const data = useQuery(api.customers.list);
+```
+
+### `useMutation()`
+
+Execute a Convex mutation.
+
+```tsx
+const create = useMutation(api.customers.create);
+await create({ name: 'Acme Corp' });
+```

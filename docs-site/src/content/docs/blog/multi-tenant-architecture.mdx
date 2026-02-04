@@ -1,0 +1,94 @@
+---
+title: Multi-Tenant Architecture Explained
+description: Deep dive into multi-tenant architecture patterns used in iSaaSIT
+date: 2026-02-03
+---
+
+# Multi-Tenant Architecture Explained
+
+**Published:** February 3, 2026
+
+Multi-tenancy is a core concept in iSaaSIT. This post explains what it is and why we chose this approach.
+
+## What is Multi-Tenancy?
+
+Multi-tenancy is an architecture where a single instance of software serves multiple customers (tenants). Each tenant's data is isolated and remains invisible to other tenants.
+
+```
+┌─────────────────────────────────────┐
+│          iSaaSIT Platform           │
+├─────────────────────────────────────┤
+│  ┌─────────┐ ┌─────────┐ ┌────────┐ │
+│  │ Agency A │ │ Agency B │ │ Agency C│ │
+│  │ ┌─────┐ │ │ ┌─────┐ │ │ ┌────┐ │ │
+│  │ │ C1  │ │ │ │ C1  │ │ │ │ C1 │ │ │
+│  │ │ C2  │ │ │ │ C2  │ │ │ └────┘ │ │
+│  │ └─────┘ │ │ └─────┘ │ └────────┘ │
+│  └─────────┘ └─────────┘            │
+└─────────────────────────────────────┘
+```
+
+## Benefits of Multi-Tenancy
+
+### 1. Cost Efficiency
+
+- Single codebase to maintain
+- Shared infrastructure costs
+- Easier updates and deployments
+
+### 2. Data Isolation
+
+- Each tenant's data is completely separate
+- Security compliance is easier to manage
+- Tenant-specific customizations are possible
+
+### 3. Scalability
+
+- Add new tenants without code changes
+- Scale infrastructure based on overall demand
+- No per-tenant deployment needed
+
+## How iSaaSIT Implements Multi-Tenancy
+
+### Organization Level
+
+The top-level tenant in iSaaSIT is the Organization (agency). Each organization:
+
+- Has its own subscription and billing
+- Manages its own users and customers
+- Cannot access other organizations' data
+
+### Customer Level
+
+Within an organization, Customers provide another layer:
+
+- Each customer is a client company
+- Staff can be assigned to specific customers
+- Clients only see their own customer data
+
+### Implementation in Code
+
+```typescript
+// Every query filters by organization
+export const listCustomers = query({
+  handler: async (ctx) => {
+    const org = await getCurrentOrg(ctx);
+    
+    return await ctx.db
+      .query('customers')
+      .withIndex('by_org', q => q.eq('orgId', org._id))
+      .collect();
+  },
+});
+```
+
+## Best Practices
+
+1. **Always filter by tenant** in database queries
+2. **Validate permissions** at the API level
+3. **Use indexes** for efficient tenant-based queries
+4. **Never expose tenant IDs** in URLs if possible
+
+## Conclusion
+
+Multi-tenancy is essential for SaaS applications serving multiple clients. iSaaSIT provides a solid foundation with proper data isolation at every level.

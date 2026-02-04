@@ -1,0 +1,87 @@
+---
+title: Quick Start
+description: Get up and running with iSaaSIT in minutes
+---
+
+This guide will help you get iSaaSIT running locally in just a few minutes.
+
+## Prerequisites
+
+- Node.js 20 or later
+- npm or yarn
+- A WorkOS account (free tier available)
+- A Convex account (free tier available)
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/workos/template-convex-tanstack-start-authkit.git
+cd template-convex-tanstack-start-authkit
+```
+
+## 2. Install Dependencies
+
+```bash
+npm install
+```
+
+## 3. Set Up Environment Variables
+
+Copy the example environment file:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Edit `.env.local` with your credentials:
+
+```bash
+# WorkOS AuthKit Configuration
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_test_xxx
+WORKOS_COOKIE_PASSWORD=your-secret-password-min-32-chars
+WORKOS_REDIRECT_URI=http://localhost:3000/callback
+
+# Convex Configuration
+VITE_CONVEX_URL=https://xxx.convex.cloud
+```
+
+### Getting WorkOS Credentials
+
+1. Sign up at [workos.com](https://workos.com)
+2. Create a new project
+3. Go to **Configuration** → **API Keys** to get your API key
+4. Go to **Authentication** → **Redirect URIs** and add `http://localhost:3000/callback`
+5. Create a Client ID in the **Authentication** section
+
+### Getting Convex URL
+
+1. Sign up at [convex.dev](https://convex.dev)
+2. Install the Convex CLI: `npm install -g convex`
+3. Run `npx convex dev` to initialize your project
+4. The CLI will provide your deployment URL
+
+## 4. Start the Development Server
+
+```bash
+npm run dev
+```
+
+This starts both the frontend and backend in parallel:
+- Frontend: http://localhost:3000
+- Convex Dashboard: http://localhost:6791
+
+## 5. Verify Everything Works
+
+1. Open http://localhost:3000
+2. Click "Sign In" - you should be redirected to WorkOS AuthKit
+3. Sign up with your email
+4. After authentication, you should see your user profile
+
+## Next Steps
+
+Now that you have iSaaSIT running:
+
+- Learn about the [Architecture](/guides/architecture/)
+- Explore the [Project Structure](/development/structure/)
+- Set up [Environment Variables](/development/environment/)

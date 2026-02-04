@@ -1,0 +1,118 @@
+---
+title: Authentication
+description: Understanding WorkOS AuthKit integration in iSaaSIT
+---
+
+iSaaSIT uses WorkOS AuthKit for secure, enterprise-grade authentication.
+
+## Overview
+
+WorkOS AuthKit provides:
+- **Passwordless authentication** (Magic Auth)
+- **Social login** (Google, Microsoft, etc.)
+- **SSO/SAML** for enterprise customers
+- **Multi-Factor Authentication (MFA)**
+- **JWT token validation**
+
+## Configuration
+
+Auth configuration is in `convex/auth.config.ts`:
+
+```typescript
+export default {
+  providers: [
+    {
+      domain: process.env.WORKOS_DOMAIN,
+      applicationID: process.env.WORKOS_CLIENT_ID,
+    },
+  ],
+};
+```
+
+## Usage in Components
+
+### Client-Side Auth
+
+Use the `useAuth()` hook in React components:
+
+```tsx
+import { useAuth } from '@workos/authkit-react';
+
+function UserProfile() {
+  const { user, isLoading, signOut } = useAuth();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (!user) return <div>Not signed in</div>;
+
+  return (
+    <div>
+      <p>Welcome, {user.firstName}!</p>
+      <button onClick={() => signOut()}>Sign Out</button>
+    </div>
+  );
+}
+```
+
+### Server-Side Auth
+
+Use `getAuth()` in server loaders:
+
+```tsx
+import { getAuth } from '@workos/authkit-react';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+
+export const Route = createFileRoute('/protected')({
+  loader: async () => {
+    const { user } = await getAuth();
+    if (!user) {
+      throw redirect({ to: '/login' });
+    }
+    return { user };
+  },
+});
+```
+
+## Protected Routes
+
+The `_authenticated` layout automatically protects all child routes:
+
+```
+src/routes/
+├── _authenticated.tsx      # Auth guard layout
+└── _authenticated/
+    ├── dashboard.tsx       # Protected
+    └── settings.tsx        # Protected
+```
+
+## User Object
+
+The user object from WorkOS includes:
+
+```typescript
+{
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  profilePictureUrl: string | null;
+  object: 'user';
+}
+```
+
+## Sign In Flow
+
+1. User clicks "Sign In"
+2. App calls `getSignInUrl()` with return path
+3. User authenticates with WorkOS
+4. WorkOS redirects to `/callback`
+5. App exchanges code for session
+6. User is redirected to original page
+
+## Environment Variables
+
+```bash
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_test_xxx
+WORKOS_COOKIE_PASSWORD=min-32-char-secret
+WORKOS_REDIRECT_URI=http://localhost:3000/callback
+```

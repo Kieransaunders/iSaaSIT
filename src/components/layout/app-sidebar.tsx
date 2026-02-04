@@ -7,6 +7,7 @@ import {
   CreditCard,
   ChevronDown,
   UserCircle,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -60,6 +61,15 @@ const adminNavItems = [
     title: "Settings",
     url: "/settings",
     icon: Settings,
+  },
+];
+
+const resourceNavItems = [
+  {
+    title: "Blog",
+    url: "/blog",
+    icon: BookOpen,
+    external: false,
   },
 ];
 
@@ -143,6 +153,31 @@ export function AppSidebar() {
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Resources</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {resourceNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                  >
+                    <a 
+                      href={item.url} 
+                      target={item.external ? "_blank" : undefined}
+                      rel={item.external ? "noreferrer" : undefined}
+                    >
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

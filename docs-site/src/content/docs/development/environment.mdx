@@ -1,0 +1,118 @@
+---
+title: Environment Setup
+description: Configuring environment variables for iSaaSIT
+---
+
+iSaaSIT requires several environment variables for local development and production.
+
+## Required Variables
+
+Copy `.env.local.example` to `.env.local`:
+
+```bash
+cp .env.local.example .env.local
+```
+
+### WorkOS Configuration
+
+```bash
+# Get from WorkOS Dashboard → Configuration → API Keys
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_test_xxx
+
+# Generate a random 32+ character string
+WORKOS_COOKIE_PASSWORD=your-super-secret-password-min-32-characters
+
+# Must match your WorkOS Redirect URI setting
+WORKOS_REDIRECT_URI=http://localhost:3000/callback
+```
+
+### Convex Configuration
+
+```bash
+# Get from running `npx convex dev`
+VITE_CONVEX_URL=https://xxx.convex.cloud
+```
+
+## Getting WorkOS Credentials
+
+1. **Sign up** at [workos.com](https://workos.com)
+2. **Create a Project** in the dashboard
+3. **Get API Key**:
+   - Go to **Configuration** → **API Keys**
+   - Copy the test key (starts with `sk_test_`)
+4. **Create Client ID**:
+   - Go to **Authentication**
+   - Create a new client
+   - Copy the Client ID (starts with `client_`)
+5. **Configure Redirect URI**:
+   - Go to **Authentication** → **Redirect URIs**
+   - Add `http://localhost:3000/callback`
+   - Add `http://localhost:3000/callback` for production too
+
+## Getting Convex URL
+
+1. **Sign up** at [convex.dev](https://convex.dev)
+2. **Install CLI**:
+   ```bash
+   npm install -g convex
+   ```
+3. **Initialize**:
+   ```bash
+   npx convex dev
+   ```
+4. **Copy the URL** from the output:
+   ```
+   VITE_CONVEX_URL=https://happy-dog-123.convex.cloud
+   ```
+
+## Environment Files
+
+| File | Purpose |
+|------|---------|
+| `.env.local` | Local development (gitignored) |
+| `.env.local.example` | Template for team members |
+| `convex.json` | Convex deployment config |
+
+## Production Variables
+
+For production deployment, set these in your hosting platform:
+
+```bash
+# WorkOS (use production keys)
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_live_xxx
+WORKOS_COOKIE_PASSWORD=your-production-secret
+WORKOS_REDIRECT_URI=https://yourdomain.com/callback
+
+# Convex (production deployment)
+VITE_CONVEX_URL=https://your-project.convex.cloud
+```
+
+## Verification
+
+After setting up, verify everything works:
+
+```bash
+# Start development
+npm run dev
+
+# Check these work:
+# 1. Homepage loads at http://localhost:3000
+# 2. Sign in redirects to WorkOS
+# 3. After auth, return to app works
+# 4. Convex dashboard at http://localhost:6791
+```
+
+## Troubleshooting
+
+### "Invalid client_id"
+- Check `WORKOS_CLIENT_ID` matches your WorkOS client
+
+### "Invalid redirect_uri"
+- Ensure `WORKOS_REDIRECT_URI` is added in WorkOS dashboard
+- Must match exactly (including `http` vs `https`)
+
+### Convex connection errors
+- Verify `VITE_CONVEX_URL` is correct
+- Run `npx convex dev` to ensure backend is running

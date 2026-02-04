@@ -1,0 +1,75 @@
+---
+title: Organizations
+description: Managing agencies and multi-tenancy in iSaaSIT
+---
+
+Organizations represent the top-level agency entity in iSaaSIT.
+
+## Overview
+
+Each Organization:
+- Represents an agency or company using the platform
+- Owns all billing and subscription data
+- Manages team members with Admin and Staff roles
+- Contains multiple Customer (client) accounts
+
+## Creating an Organization
+
+Organizations are created via WorkOS. When a new user signs up:
+
+1. WorkOS creates a User record
+2. An Organization can be created or joined
+3. Convex stores additional org data (subscription, limits)
+
+## Organization Data Model
+
+```typescript
+// In Convex schema
+organizations: defineTable({
+  workosOrgId: v.string(),      // Link to WorkOS org
+  name: v.string(),
+  planId: v.optional(v.string()),
+  subscriptionStatus: v.string(),
+  maxCustomers: v.number(),
+  maxStaff: v.number(),
+  maxClients: v.number(),
+})
+```
+
+## Roles within an Organization
+
+| Role | Permissions |
+|------|-------------|
+| **Admin** | Full access, billing management, user invites |
+| **Staff** | Access to assigned customers only |
+
+## API Examples
+
+### Get Current Organization
+
+```typescript
+// Convex query
+export const getCurrent = query({
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+    
+    return await ctx.db
+      .query('organizations')
+      .withIndex('by_workos_org_id', q => 
+        q.eq('workosOrgId', user.orgId)
+      )
+      .unique();
+  },
+});
+```
+
+## Usage Caps
+
+Organizations have usage caps based on their subscription plan:
+
+- `maxCustomers` - Maximum client companies
+- `maxStaff` - Maximum staff members
+- `maxClients` - Maximum client users per customer
+
+These caps are enforced at the API level.

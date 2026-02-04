@@ -1,0 +1,39 @@
+---
+title: Blog
+description: Latest updates, tutorials, and news from iSaaSIT
+template: splash
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+# iSaaSIT Blog
+
+Welcome to the iSaaSIT blog! Here you'll find tutorials, updates, and best practices for building multi-tenant SaaS applications.
+
+## Latest Posts
+
+<CardGrid stagger>
+  <Card title="Getting Started with iSaaSIT" icon="rocket">
+    A comprehensive guide to setting up your first iSaaSIT project and understanding the core concepts.
+    
+    [Read more](/blog/blog/getting-started/)
+  </Card>
+  
+  <Card title="Multi-Tenant Architecture Explained" icon="document">
+    Deep dive into the multi-tenant architecture patterns used in iSaaSIT and why they matter.
+    
+    [Read more](/blog/blog/multi-tenant-architecture/)
+  </Card>
+  
+  <Card title="Authentication Best Practices" icon="approve-check">
+    Learn how to implement secure authentication with WorkOS AuthKit and protect your routes.
+    
+    [Read more](/blog/blog/authentication-best-practices/)
+  </Card>
+  
+  <Card title="Deploying to Production" icon="cloud">
+    Step-by-step guide to deploying your iSaaSIT application to production with Convex and Netlify.
+    
+    [Read more](/blog/blog/deploying-to-production/)
+  </Card>
+</CardGrid>

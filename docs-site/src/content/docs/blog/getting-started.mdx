@@ -1,0 +1,75 @@
+---
+title: Getting Started with iSaaSIT
+description: A comprehensive guide to setting up your first iSaaSIT project
+date: 2026-02-04
+---
+
+# Getting Started with iSaaSIT
+
+**Published:** February 4, 2026
+
+Welcome to iSaaSIT! This guide will walk you through everything you need to know to get your first project up and running.
+
+## What is iSaaSIT?
+
+iSaaSIT is an open-source SaaS starter kit designed for agencies and freelancers. It provides:
+
+- **Multi-tenant architecture** - Manage multiple clients from a single platform
+- **Built-in authentication** - Enterprise-grade auth with WorkOS AuthKit
+- **Role-based access control** - Admin, Staff, and Client roles
+- **Real-time database** - Convex powers your backend with live queries
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- Node.js 20 or later
+- A WorkOS account (free tier available)
+- A Convex account (free tier available)
+
+## Quick Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/workos/template-convex-tanstack-start-authkit.git
+cd template-convex-tanstack-start-authkit
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Environment Variables
+
+```bash
+cp .env.local.example .env.local
+```
+
+Edit `.env.local` with your WorkOS and Convex credentials.
+
+### 4. Start Development
+
+```bash
+npm run dev
+```
+
+## Understanding the Architecture
+
+iSaaSIT uses a hierarchical data model:
+
+1. **Organization** - Your agency
+2. **Customers** - Your clients
+3. **Users** - People who access the system
+
+Each level has proper data isolation, ensuring clients only see their own data.
+
+## Next Steps
+
+- Read the [full documentation](/guides/introduction/)
+- Explore the [API reference](/reference/api/)
+- Join our community on GitHub
+
+Happy building!

@@ -1,0 +1,525 @@
+---
+description: WorkOS AuthKit integration patterns - authentication flow, user context, route protection
+globs: src/**/*.tsx
+alwaysApply: true
+---
+
+# 4. Authentication Patterns (WorkOS AuthKit)
+
+This document covers WorkOS AuthKit integration, user context, and authentication patterns for iSaaSIT.
+
+## Authentication Flow
+
+1. **WorkOS AuthKit** handles authentication via redirect-based OAuth
+2. JWT tokens are validated by Convex using `auth.config.ts`
+3. Two auth hooks available:
+   - `useAuth()` - For client components
+   - `getAuth()` - For server loaders
+4. Protected routes use the `_authenticated` layout with loader-based guards
+
+## Client-Side Authentication
+
+### useAuth Hook
+
+```typescript
+import { useAuth } from "@workos/authkit-tanstack-react-start";
+
+function MyComponent() {
+    const { user, orgMembership, loading } = useAuth();
+    
+    if (loading) return <div>Loading...</div>;
+    if (!user) return <div>Not authenticated</div>;
+    
+    return (
+        <div>
+            <p>Welcome, {user.firstName} {user.lastName}</p>
+            <p>Org: {orgMembership?.orgId}</p>
+            <p>Role: {orgMembership?.role?.slug}</p>
+        </div>
+    );
+}
+```
+
+### User Object Structure
+
+```typescript
+interface User {
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    profilePictureUrl: string | null;
+    object: "user";
+}
+
+interface OrgMembership {
+    orgId: string;
+    userId: string;
+    role: {
+        slug: string; // "admin", "staff", or "client"
+    };
+    object: "org_membership";
+}
+```
+
+### Sign In / Sign Out
+
+```typescript
+import { 
+    useAuth, 
+    useSignIn, 
+    useSignOut 
+} from "@workos/authkit-tanstack-react-start";
+
+function AuthButtons() {
+    const { user } = useAuth();
+    const signIn = useSignIn();
+    const signOut = useSignOut();
+    
+    if (user) {
+        return <button onClick={() => signOut()}>Sign Out</button>;
+    }
+    
+    return <button onClick={() => signIn()}>Sign In</button>;
+}
+```
+
+### Sign In with Return Path
+
+```typescript
+function SignInButton({ returnPath }: { returnPath: string }) {
+    const signIn = useSignIn();
+    
+    return (
+        <button onClick={() => signIn({ data: { returnPathname: returnPath } })}>
+            Sign In
+        </button>
+    );
+}
+```
+
+## Server-Side Authentication
+
+### getAuth in Route Loaders
+
+```typescript
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { getAuth, getSignInUrl } from "@workos/authkit-tanstack-react-start";
+
+export const Route = createFileRoute("/_authenticated")({
+    beforeLoad: async ({ location }) => {
+        const { user, orgMembership } = await getAuth();
+        
+        if (!user) {
+            const href = await getSignInUrl({
+                data: { returnPathname: location.pathname },
+            });
+            throw redirect({ href });
+        }
+        
+        return { user, orgMembership };
+    },
+});
+```
+
+### Protecting Server Actions
+
+```typescript
+import { getAuth } from "@workos/authkit-tanstack-react-start";
+
+export async function serverAction() {
+    "use server";
+    
+    const { user } = await getAuth();
+    
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
+    
+    // Perform action
+}
+```
+
+## Route Protection
+
+### Standard Protected Layout
+
+```typescript
+// src/routes/_authenticated.tsx
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { getAuth, getSignInUrl } from "@workos/authkit-tanstack-react-start";
+
+export const Route = createFileRoute("/_authenticated")({
+    beforeLoad: async ({ location }) => {
+        const auth = await getAuth();
+        
+        if (!auth.user) {
+            const href = await getSignInUrl({
+                data: { returnPathname: location.pathname },
+            });
+            throw redirect({ href });
+        }
+        
+        return auth;
+    },
+    component: () => <Outlet />,
+});
+```
+
+### Admin-Only Routes
+
+```typescript
+// src/routes/_authenticated/_admin.tsx
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { getAuth } from "@workos/authkit-tanstack-react-start";
+
+export const Route = createFileRoute("/_authenticated/_admin")({
+    beforeLoad: async () => {
+        const { user, orgMembership } = await getAuth();
+        
+        if (!user) {
+            throw redirect({ to: "/" });
+        }
+        
+        const role = orgMembership?.role?.slug;
+        if (role !== "admin") {
+            throw redirect({ to: "/dashboard" });
+        }
+        
+        return { user, orgMembership };
+    },
+    component: AdminLayout,
+});
+```
+
+### Staff-Only Routes
+
+```typescript
+// src/routes/_authenticated/_staff.tsx
+export const Route = createFileRoute("/_authenticated/_staff")({
+    beforeLoad: async () => {
+        const { user, orgMembership } = await getAuth();
+        
+        if (!user) {
+            throw redirect({ to: "/" });
+        }
+        
+        const role = orgMembership?.role?.slug;
+        if (!["admin", "staff"].includes(role)) {
+            throw redirect({ to: "/dashboard" });
+        }
+        
+        return { user, orgMembership };
+    },
+    component: StaffLayout,
+});
+```
+
+## Convex Integration
+
+### Auth Configuration
+
+```typescript
+// convex/auth.config.ts
+export default {
+    providers: [
+        {
+            domain: process.env.WORKOS_DOMAIN,
+            applicationID: process.env.WORKOS_CLIENT_ID,
+        },
+    ],
+};
+```
+
+### Accessing User in Convex Functions
+
+```typescript
+import { query } from "./_generated/server";
+import { v } from "convex/values";
+
+export const getCurrentUser = query({
+    args: {},
+    handler: async (ctx) => {
+        // Get user ID from auth context
+        const userId = ctx.auth?.userId;
+        
+        if (!userId) {
+            return null;
+        }
+        
+        // Fetch user from WorkOS or your own user table
+        return await ctx.db
+            .query("users")
+            .withIndex("by_workos_id", (q) => q.eq("workOsUserId", userId))
+            .unique();
+    },
+});
+```
+
+### Protected Convex Queries
+
+```typescript
+export const getOrgData = query({
+    args: { orgId: v.id("orgs") },
+    handler: async (ctx, args) => {
+        const userId = ctx.auth?.userId;
+        if (!userId) {
+            throw new Error("Unauthorized");
+        }
+        
+        // Verify user has access to this org
+        const membership = await ctx.db
+            .query("orgMemberships")
+            .withIndex("by_user_org", (q) => 
+                q.eq("workOsUserId", userId).eq("orgId", args.orgId)
+            )
+            .unique();
+        
+        if (!membership) {
+            throw new Error("Forbidden");
+        }
+        
+        return await ctx.db.get(args.orgId);
+    },
+});
+```
+
+## Organization Management
+
+### Creating an Organization
+
+```typescript
+import { useAuth, useCreateOrganization } from "@workos/authkit-tanstack-react-start";
+
+function CreateOrgButton() {
+    const createOrg = useCreateOrganization();
+    
+    return (
+        <button onClick={() => createOrg()}>
+            Create Organization
+        </button>
+    );
+}
+```
+
+### Switching Organizations
+
+```typescript
+import { useAuth, useSwitchOrganization } from "@workos/authkit-tanstack-react-start";
+
+function OrgSwitcher({ orgs }: { orgs: Array<{ id: string; name: string }> }) {
+    const { orgMembership } = useAuth();
+    const switchOrg = useSwitchOrganization();
+    
+    return (
+        <select 
+            value={orgMembership?.orgId}
+            onChange={(e) => switchOrg(e.target.value)}
+        >
+            {orgs.map((org) => (
+                <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+        </select>
+    );
+}
+```
+
+### Getting User Organizations
+
+```typescript
+import { useOrganizations } from "@workos/authkit-tanstack-react-start";
+
+function OrgList() {
+    const { organizations, loading } = useOrganizations();
+    
+    if (loading) return <div>Loading...</div>;
+    
+    return (
+        <ul>
+            {organizations?.map((org) => (
+                <li key={org.id}>{org.name}</li>
+            ))}
+        </ul>
+    );
+}
+```
+
+## Inviting Users
+
+### Send Invitation (Admin)
+
+```typescript
+import { useInviteUser } from "@workos/authkit-tanstack-react-start";
+
+function InviteForm() {
+    const [email, setEmail] = useState("");
+    const [role, setRole] = useState("staff");
+    const inviteUser = useInviteUser();
+    
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        await inviteUser({ email, role: { slug: role } });
+    };
+    
+    return (
+        <form onSubmit={handleSubmit}>
+            <input 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+            />
+            <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <option value="staff">Staff</option>
+                <option value="client">Client</option>
+            </select>
+            <button type="submit">Send Invite</button>
+        </form>
+    );
+}
+```
+
+## Common Patterns
+
+### Require Auth Component
+
+```typescript
+import { useAuth } from "@workos/authkit-tanstack-react-start";
+import { Navigate } from "@tanstack/react-router";
+
+function RequireAuth({ children }: { children: React.ReactNode }) {
+    const { user, loading } = useAuth();
+    
+    if (loading) return <div>Loading...</div>;
+    if (!user) return <Navigate to="/" />;
+    
+    return <>{children}</>;
+}
+```
+
+### Role-Based Component
+
+```typescript
+import { useAuth } from "@workos/authkit-tanstack-react-start";
+
+function RoleGuard({ 
+    allowedRoles, 
+    children 
+}: { 
+    allowedRoles: string[];
+    children: React.ReactNode;
+}) {
+    const { orgMembership } = useAuth();
+    const role = orgMembership?.role?.slug;
+    
+    if (!role || !allowedRoles.includes(role)) {
+        return <div>Access denied</div>;
+    }
+    
+    return <>{children}</>;
+}
+
+// Usage
+<RoleGuard allowedRoles={["admin", "staff"]}>
+    <StaffFeature />
+</RoleGuard>
+```
+
+### Auth Hook with Convex
+
+```typescript
+import { useAuth } from "@workos/authkit-tanstack-react-start";
+import { useQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
+import { api } from "../convex/_generated/api";
+
+export function useAuthenticatedUser() {
+    const { user: workosUser, orgMembership, loading: authLoading } = useAuth();
+    
+    const { data: convexUser, isLoading: userLoading } = useQuery(
+        convexQuery(api.users.getByWorkOsId, 
+            workosUser ? { workOsUserId: workosUser.id } : "skip"
+        )
+    );
+    
+    return {
+        workosUser,
+        convexUser,
+        orgMembership,
+        role: orgMembership?.role?.slug,
+        isLoading: authLoading || userLoading,
+        isAuthenticated: !!workosUser,
+    };
+}
+```
+
+## Callback Route
+
+```typescript
+// src/routes/callback.tsx
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { handleAuthCallback } from "@workos/authkit-tanstack-react-start";
+
+export const Route = createFileRoute("/callback")({
+    beforeLoad: async ({ request }) => {
+        const url = new URL(request.url);
+        await handleAuthCallback(url);
+        
+        // Get return path from URL or default to dashboard
+        const returnPath = url.searchParams.get("returnPathname") || "/dashboard";
+        throw redirect({ to: returnPath });
+    },
+});
+```
+
+## Environment Variables
+
+```bash
+# WorkOS AuthKit Configuration
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_test_xxx
+WORKOS_COOKIE_PASSWORD=xxx  # Min 32 characters
+WORKOS_REDIRECT_URI=http://localhost:3000/callback
+```
+
+## Error Handling
+
+### Auth Errors
+
+```typescript
+import { useAuth } from "@workos/authkit-tanstack-react-start";
+
+function AuthAwareComponent() {
+    const { user, error } = useAuth();
+    
+    if (error) {
+        return <div>Authentication error: {error.message}</div>;
+    }
+    
+    return <div>Content</div>;
+}
+```
+
+### Session Expired
+
+```typescript
+import { useAuth, useSignIn } from "@workos/authkit-tanstack-react-start";
+
+function SessionHandler() {
+    const { user } = useAuth();
+    const signIn = useSignIn();
+    
+    useEffect(() => {
+        // Check for session expiration
+        const checkSession = () => {
+            if (!user && window.location.pathname !== "/") {
+                signIn({ data: { returnPathname: window.location.pathname } });
+            }
+        };
+        
+        const interval = setInterval(checkSession, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, [user, signIn]);
+    
+    return null;
+}
+```

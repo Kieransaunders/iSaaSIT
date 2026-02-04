@@ -1,0 +1,173 @@
+---
+title: Frontend Guide
+description: Working with the iSaaSIT frontend stack
+---
+
+iSaaSIT uses modern React patterns with TanStack Start, Router, and Query.
+
+## Technology Stack
+
+- **React 19** - Latest React with concurrent features
+- **TanStack Start** - Full-stack React framework
+- **TanStack Router** - Type-safe file-based routing
+- **TanStack Query** - Server state management
+- **Tailwind CSS v4** - Utility-first styling
+
+## Routing
+
+TanStack Router uses file-based routing:
+
+### Basic Routes
+
+| File | URL |
+|------|-----|
+| `routes/index.tsx` | `/` |
+| `routes/about.tsx` | `/about` |
+| `routes/blog/index.tsx` | `/blog` |
+| `routes/blog/$postId.tsx` | `/blog/123` |
+
+### Layout Routes
+
+Files starting with `_` are layouts:
+
+```
+routes/
+├── _authenticated.tsx          # Auth layout
+├── _authenticated/
+│   ├── dashboard.tsx           # /dashboard
+│   └── settings.tsx            # /settings
+└── _marketing.tsx              # Marketing layout
+    └── _marketing/
+        └── pricing.tsx         # /pricing
+```
+
+### Route Definition
+
+```tsx
+// routes/about.tsx
+import { createFileRoute } from '@tanstack/react-router';
+
+export const Route = createFileRoute('/about')({
+  component: AboutComponent,
+  loader: async () => {
+    // Load data before rendering
+    return { title: 'About Us' };
+  },
+});
+
+function AboutComponent() {
+  const { title } = Route.useLoaderData();
+  return <h1>{title}</h1>;
+}
+```
+
+## Data Fetching
+
+### With Convex
+
+```tsx
+import { useQuery } from '@convex-dev/react-query';
+import { api } from '../../convex/_generated/api';
+
+function UserProfile() {
+  const user = useQuery(api.users.getCurrent);
+  
+  if (user === undefined) return <Loading />;
+  if (user === null) return <NotFound />;
+  
+  return <div>{user.email}</div>;
+}
+```
+
+### With TanStack Query
+
+```tsx
+import { useQuery } from '@tanstack/react-query';
+
+function ExternalData() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['posts'],
+    queryFn: async () => {
+      const res = await fetch('/api/posts');
+      return res.json();
+    },
+  });
+  
+  if (isLoading) return <Loading />;
+  return <PostList posts={data} />;
+}
+```
+
+## Styling with Tailwind
+
+```tsx
+function Button({ children, variant = 'primary' }) {
+  return (
+    <button
+      className={`
+        px-4 py-2 rounded-lg font-medium
+        ${variant === 'primary' 
+          ? 'bg-blue-600 text-white hover:bg-blue-700' 
+          : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+      `}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+## Form Handling
+
+```tsx
+import { useState } from 'react';
+import { useMutation } from '@convex-dev/react-query';
+import { api } from '../../convex/_generated/api';
+
+function CreateCustomerForm() {
+  const [name, setName] = useState('');
+  const create = useMutation(api.customers.create);
+  
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    await create({ name });
+    setName('');
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Customer name"
+      />
+      <button type="submit">Create</button>
+    </form>
+  );
+}
+```
+
+## Navigation
+
+```tsx
+import { Link, useNavigate } from '@tanstack/react-router';
+
+function Navigation() {
+  const navigate = useNavigate();
+  
+  return (
+    <nav>
+      {/* Type-safe link */}
+      <Link to="/about">About</Link>
+      <Link to="/blog/$postId" params={{ postId: '123' }}>
+        Post
+      </Link>
+      
+      {/* Programmatic navigation */}
+      <button onClick={() => navigate({ to: '/dashboard' })}>
+        Go to Dashboard
+      </button>
+    </nav>
+  );
+}
+```

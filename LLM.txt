@@ -1,0 +1,112 @@
+# iSaaSIT - AI Coding Context
+
+> iSaaSIT is an open-source SaaS starter kit for agencies managing multiple clients. Built with TanStack Start + Convex + WorkOS AuthKit.
+
+## Quick Links
+
+- **Cursor Rules**: `.cursor/rules/*.mdc` - Detailed patterns for Cursor IDE
+- **Example Prompts**: `.cursor/example-prompts.md` - Copy-paste prompts for common tasks
+- **Full Guide**: `AGENTS.md` - Comprehensive project documentation
+
+## Technology Stack
+
+- **Frontend**: React 19, TanStack Start/Router/Query, Tailwind v4
+- **Backend**: Convex (serverless, real-time database)
+- **Auth**: WorkOS AuthKit (JWT-based)
+- **Planned**: Lemon Squeezy (billing), shadcn/ui (components)
+
+## Project Structure
+
+```
+src/routes/           # File-based routes (TanStack Router)
+convex/               # Backend Convex functions
+.cursor/rules/        # AI coding rules
+.planning/            # Project requirements
+```
+
+## Core Patterns
+
+### Route Protection
+
+```typescript
+// Protected route layout
+export const Route = createFileRoute('/_authenticated')({
+  beforeLoad: async ({ location }) => {
+    const { user } = await getAuth();
+    if (!user) throw redirect({ href: await getSignInUrl() });
+  },
+  component: () => <Outlet />,
+});
+```
+
+### Convex Query
+
+```typescript
+export const getCustomers = query({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("customers")
+      .withIndex("by_org", q => q.eq("orgId", args.orgId))
+      .collect();
+  },
+});
+```
+
+### Convex Mutation
+
+```typescript
+export const createCustomer = mutation({
+  args: { orgId: v.id("orgs"), name: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("customers", args);
+  },
+});
+```
+
+## Multi-Tenancy Model
+
+- **Org**: Agency organization (WorkOS + Convex)
+- **Customer**: Agency's client company (Convex)
+- **User**: End user (WorkOS)
+- **Roles**: Admin (all), Staff (assigned), Client (own customer)
+
+## Role-Based Access
+
+| Role | Visibility |
+|------|------------|
+| Admin | All org data |
+| Staff | Assigned Customers only |
+| Client | Own Customer only |
+
+## Development Commands
+
+```bash
+npm run dev          # Start dev server (frontend + backend)
+npm run dev:backend  # Start only Convex
+npx convex dev       # Initialize/regenerate Convex types
+```
+
+## Key Files
+
+- `convex/schema.ts` - Database schema
+- `convex/auth.config.ts` - WorkOS JWT validation
+- `src/routes/_authenticated.tsx` - Protected layout
+- `src/router.tsx` - Router configuration
+
+## Auto-Generated Files (Do Not Edit)
+
+- `convex/_generated/*`
+- `src/routeTree.gen.ts`
+
+## External Documentation
+
+- [Convex](https://docs.convex.dev/)
+- [TanStack Start](https://tanstack.com/start)
+- [TanStack Router](https://tanstack.com/router)
+- [WorkOS AuthKit](https://workos.com/docs/authkit)
+- [Tailwind v4](https://tailwindcss.com/)
+
+---
+
+*For detailed patterns, see `.cursor/rules/*.mdc` files*

@@ -1,0 +1,61 @@
+---
+title: Introduction
+description: Introduction to iSaaSIT - Open source SaaS starter kit for agencies
+---
+
+iSaaSIT is an open-source SaaS starter kit designed specifically for **agencies and freelancers** who need a repeatable, multi-tenant foundation for client projects.
+
+## Who is this for?
+
+- **Agencies** who build SaaS applications for multiple clients
+- **Freelancers** who need a solid starting point for client work
+- **Developers** learning modern full-stack development patterns
+- **Startups** that need multi-tenant architecture from day one
+
+## Key Concepts
+
+### Organization (Agency)
+
+The top-level entity representing your agency or company. The Organization:
+- Owns all billing and subscription data
+- Manages team members (Admin and Staff roles)
+- Controls global settings and configurations
+
+### Customer (Client Company)
+
+A client company managed by the Organization. Each Customer:
+- Has isolated data from other customers
+- Can have multiple Client users
+- Is assigned to Staff members for management
+
+### Users & Roles
+
+| Role | Description |
+|------|-------------|
+| **Admin** | Full access to organization data, billing, and user management |
+| **Staff** | Access only to assigned customers and their data |
+| **Client** | Limited access to their own customer data only |
+
+## Technology Stack
+
+### Frontend
+- **React 19** - Modern UI framework
+- **TanStack Start** - Full-stack React framework with SSR
+- **TanStack Router** - File-based routing
+- **Tailwind CSS v4** - Utility-first styling
+- **shadcn/ui** - Component library (planned)
+
+### Backend
+- **Convex** - Serverless backend with real-time database
+- **WorkOS AuthKit** - Enterprise-grade authentication
+- **TypeScript 5.9** - Type-safe development
+
+### Planned Integrations
+- **Lemon Squeezy** - Billing and subscriptions (Merchant of Record)
+
+## Getting Help
+
+- [GitHub Repository](https://github.com/workos/template-convex-tanstack-start-authkit)
+- [WorkOS Documentation](https://workos.com/docs)
+- [Convex Documentation](https://docs.convex.dev)
+- [TanStack Documentation](https://tanstack.com)

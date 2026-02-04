@@ -1,0 +1,160 @@
+---
+title: Convex Backend
+description: Working with Convex in iSaaSIT
+---
+
+Convex is the serverless backend powering iSaaSIT with real-time database capabilities.
+
+## What is Convex?
+
+Convex provides:
+- **Real-time database** - Live queries that update automatically
+- **Serverless functions** - No server management needed
+- **TypeScript native** - Full type safety end-to-end
+- **Automatic scaling** - Handles traffic spikes automatically
+
+## File Structure
+
+```
+convex/
+├── schema.ts              # Database schema definition
+├── myFunctions.ts         # Query/mutation/action functions
+├── auth.config.ts         # JWT validation config
+└── _generated/            # Auto-generated types (don't edit)
+```
+
+## Schema Definition
+
+Define your data model in `schema.ts`:
+
+```typescript
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
+
+export default defineSchema({
+  organizations: defineTable({
+    name: v.string(),
+    workosOrgId: v.string(),
+    planId: v.optional(v.string()),
+  })
+    .index('by_workos_org_id', ['workosOrgId']),
+    
+  customers: defineTable({
+    orgId: v.id('organizations'),
+    name: v.string(),
+    slug: v.string(),
+  })
+    .index('by_org', ['orgId'])
+    .index('by_org_slug', ['orgId', 'slug']),
+});
+```
+
+## Function Types
+
+### Query (Read)
+
+```typescript
+import { query } from './_generated/server';
+
+export const get = query({
+  args: { id: v.id('customers') },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+```
+
+### Mutation (Write)
+
+```typescript
+import { mutation } from './_generated/server';
+
+export const create = mutation({
+  args: {
+    orgId: v.id('organizations'),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert('customers', {
+      orgId: args.orgId,
+      name: args.name,
+      createdAt: Date.now(),
+    });
+  },
+});
+```
+
+### Action (Side Effects)
+
+```typescript
+import { action } from './_generated/server';
+
+export const sendEmail = action({
+  args: { to: v.string(), subject: v.string() },
+  handler: async (ctx, args) => {
+    // Can call external APIs
+    await fetch('https://api.email-service.com/send', {
+      method: 'POST',
+      body: JSON.stringify(args),
+    });
+  },
+});
+```
+
+## Using in React
+
+### useQuery Hook
+
+```tsx
+import { useQuery } from '@convex-dev/react-query';
+import { api } from '../convex/_generated/api';
+
+function CustomerList() {
+  const customers = useQuery(api.customers.list);
+  
+  if (customers === undefined) return <Loading />;
+  
+  return (
+    <ul>
+      {customers.map(c => <li key={c._id}>{c.name}</li>)}
+    </ul>
+  );
+}
+```
+
+### useMutation Hook
+
+```tsx
+import { useMutation } from '@convex-dev/react-query';
+import { api } from '../convex/_generated/api';
+
+function CreateCustomer() {
+  const create = useMutation(api.customers.create);
+  
+  const handleSubmit = async (name: string) => {
+    await create({ name });
+  };
+  
+  return <Form onSubmit={handleSubmit} />;
+}
+```
+
+## CLI Commands
+
+```bash
+# Start Convex dev server
+npx convex dev
+
+# Deploy to production
+npx convex deploy
+
+# Sync schema changes
+npx convex dev --once
+```
+
+## Best Practices
+
+1. **Always validate args** - Use `v` validators
+2. **Use indexes** - For efficient queries
+3. **Handle auth** - Check user permissions
+4. **Type safety** - Generated types are your friend
