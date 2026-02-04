@@ -1,25 +1,31 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightBlog from 'starlight-blog';
+import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://docs.isaasit.com', // Update this to your actual domain
   server: {
     port: 4321,
   },
   integrations: [
     starlight({
-      title: 'iSaaSIT Documentation',
+      title: 'iSaaSIT',
       description: 'Documentation for iSaaSIT - Open source SaaS starter kit for agencies',
       logo: {
         src: './src/assets/houston.webp',
+        replacesTitle: true,
       },
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/workos/template-convex-tanstack-start-authkit' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/Kieransaunders/iSaaSIT' },
+        { icon: 'twitter', label: 'Twitter', href: 'https://twitter.com' },
+        { icon: 'discord', label: 'Discord', href: 'https://discord.gg' },
       ],
       sidebar: [
         {
-          label: 'Getting Started',
+          label: 'Start Here',
           items: [
             { label: 'Introduction', slug: 'guides/introduction' },
             { label: 'Quick Start', slug: 'guides/quick-start' },
@@ -47,9 +53,31 @@ export default defineConfig({
         },
         {
           label: 'Reference',
-          autogenerate: { directory: 'reference' },
+          items: [
+            { label: 'API Reference', slug: 'reference/api' },
+          ],
         },
       ],
+      plugins: [
+        starlightBlog({
+          title: 'Blog',
+          customCss: ['./src/styles/blog.css'],
+          authors: {
+            kieran: {
+              name: 'Kieran',
+              title: 'Creator @ iSaaSIT',
+              picture: '/favicon.svg',
+              url: 'https://github.com/Kieransaunders',
+            },
+          },
+        }),
+      ],
+      customCss: [
+        './src/styles/tailwind.css',
+      ],
+    }),
+    tailwind({
+      applyBaseStyles: false,
     }),
   ],
 });
