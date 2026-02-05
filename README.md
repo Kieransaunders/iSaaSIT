@@ -14,7 +14,9 @@ This template gives you everything you need to launch a multi-tenant SaaS in rec
 ✅ **Role-based access** - Admin, Staff, and Client roles built-in  
 ✅ **Modern stack** - React 19, TanStack Start, Convex, Tailwind CSS v4  
 ✅ **Type-safe** - End-to-end TypeScript with inferred types from backend to frontend  
-✅ **AI-Ready** - Cursor rules and GSD integration for AI-assisted development  
+✅ **AI-Ready** - Cursor rules, Claude Code skills, and GSD integration for AI-assisted development
+
+> **🎨 New:** 6 Claude Code skills now bundled in the repo, including **ui-ux-pro-max** for instant design system generation (50+ styles, 97 palettes, 57 font pairings). Use `/ui-ux-pro-max`, `/convex`, `/tanstack` and more - no setup required!
 
 After the initial setup (<2 minutes) you'll have a working full-stack app using:
 
@@ -98,24 +100,44 @@ If you prefer to set up manually:
 
 6. Open [http://localhost:3000](http://localhost:3000) to see your app
 
-## AI-Assisted Development (Optional)
+## AI-Assisted Development
 
-This project includes support for **GSD (Get Shit Done)** - a meta-prompting system for spec-driven development with AI coding assistants like Claude Code.
+This project is optimized for AI-assisted development with comprehensive documentation and tooling support for coding assistants like Claude Code and Cursor.
 
-### Install GSD
+### 📁 AI Developer Resources
+
+| Document | Purpose |
+|----------|---------|
+| **`LLM.txt`** | Quick context for any LLM - start here |
+| **`AGENTS.md`** | Comprehensive project documentation and patterns |
+| **`.cursor/rules/*.mdc`** | Contextual coding rules for Cursor IDE |
+| **`.cursor/example-prompts.md`** | Copy-paste prompts for common tasks |
+| **`docs/CONVEX_LLMS.md`** | Local copy of Convex LLM documentation |
+| **`.claude/skills/*/`** | Specialized skills for Claude Code |
+
+### 🤖 Claude Code Skills (Bundled & Ready)
+
+**All skills are pre-installed in `.claude/skills/`** - no setup required. Just use slash commands like `/convex`, `/ui-ux-pro-max`, or `/tanstack` in Claude Code.
+
+| Skill | Slash Command | Description |
+|-------|---------------|-------------|
+| `convex/` | `/convex` | Backend development patterns with Convex |
+| `tanstack/` | `/tanstack` | TanStack Start, Router, and Query patterns |
+| `tailwind-v4/` | `/tailwind-v4` | Tailwind CSS v4 styling and theming |
+| `shadcn-ui/` | `/shadcn-ui` | shadcn/ui component usage |
+| `astro-starlight/` | `/astro-starlight` | Documentation site development |
+| `ui-ux-pro-max/` | `/ui-ux-pro-max` | Complete design system generator with 50+ styles, 97 color palettes, 57 font pairings, 99 UX guidelines |
+
+**New in this release:** The **ui-ux-pro-max** skill (from [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)) is now bundled, giving you instant access to comprehensive design intelligence for building beautiful, accessible UIs.
+
+### 🎯 GSD (Get Shit Done)
+
+A meta-prompting system for spec-driven development:
 
 ```bash
 npm run setup:gsd
+# Or manually: npx get-shit-done-cc@latest --claude --local
 ```
-
-Or manually:
-```bash
-npx get-shit-done-cc@latest --claude --local
-```
-
-### GSD Commands
-
-Once installed, use these in your AI assistant:
 
 | Command | Purpose |
 |---------|---------|
