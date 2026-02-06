@@ -84,7 +84,7 @@ function CustomersPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
           <p className="text-muted-foreground">
-            Manage your agency&apos;s client companies
+            Manage your customers
           </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -305,7 +305,7 @@ function CreateCustomerForm({
       <DialogHeader>
         <DialogTitle>Add Customer</DialogTitle>
         <DialogDescription>
-          Add a new client company to your agency.
+          Add a new customer to your workspace.
         </DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 py-4">

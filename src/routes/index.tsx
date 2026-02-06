@@ -451,7 +451,7 @@ function AuthenticatedHome() {
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="text-3xl font-bold mb-4">Welcome back!</h1>
           <p className="text-muted-foreground mb-8">
-            You&apos;re signed in. Continue to your dashboard to manage your agency.
+            You're signed in. Continue to your dashboard to manage your workspace.
           </p>
           <Button size="lg" asChild>
             <Link to="/dashboard">

@@ -14,7 +14,7 @@ function TeamPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Team</h1>
           <p className="text-muted-foreground">
-            Manage your agency staff and their access
+            Manage your team and their access
           </p>
         </div>
         <Button>
@@ -26,9 +26,9 @@ function TeamPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Staff Members</CardTitle>
+            <CardTitle>Team Members</CardTitle>
             <CardDescription>
-              Agency employees with access to customer data
+              Your team with access to customer data
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -36,7 +36,7 @@ function TeamPage() {
               <div className="rounded-full bg-muted p-3 mb-3">
                 <Users className="h-6 w-6" />
               </div>
-              <p>No staff members yet</p>
+              <p>No team members yet</p>
               <p className="text-sm">Invite team members to collaborate</p>
             </div>
           </CardContent>
@@ -44,7 +44,7 @@ function TeamPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Client Users</CardTitle>
+            <CardTitle>External Users</CardTitle>
             <CardDescription>
               External users with limited access to their data
             </CardDescription>
@@ -54,8 +54,8 @@ function TeamPage() {
               <div className="rounded-full bg-muted p-3 mb-3">
                 <UserCircle className="h-6 w-6" />
               </div>
-              <p>No client users yet</p>
-              <p className="text-sm">Clients will appear here once invited</p>
+              <p>No external users yet</p>
+              <p className="text-sm">External users will appear here once invited</p>
             </div>
           </CardContent>
         </Card>

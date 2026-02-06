@@ -40,7 +40,7 @@ function DashboardPage() {
             {org ? org.name : <Skeleton className="h-9 w-48" />}
           </h1>
           <p className="text-muted-foreground">
-            Welcome back! Here&apos;s an overview of your agency.
+            Welcome back! Here's an overview of your workspace.
           </p>
         </div>
         {org && (
@@ -62,7 +62,7 @@ function DashboardPage() {
         <StatCard
           title="Team Members"
           value="1"
-          description="Staff & admins"
+          description="Team members & admins"
           icon={Users}
           trend={`/${org?.maxStaff ?? 2} limit`}
         />
@@ -89,7 +89,7 @@ function DashboardPage() {
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
-              Latest updates from your agency
+              Latest updates from your workspace
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -120,7 +120,7 @@ function DashboardPage() {
             />
             <QuickActionButton
               label="Invite Team Member"
-              description="Add staff to your agency"
+              description="Add a team member"
               href="/team"
               icon={Users}
             />
@@ -146,8 +146,8 @@ function DashboardPage() {
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <UsageBar label="Customers" used={0} max={org.maxCustomers} />
-              <UsageBar label="Staff Members" used={1} max={org.maxStaff} />
-              <UsageBar label="Client Users" used={0} max={org.maxClients} />
+              <UsageBar label="Team Members" used={1} max={org.maxStaff} />
+              <UsageBar label="External Users" used={0} max={org.maxClients} />
             </div>
           </CardContent>
         </Card>

@@ -33,7 +33,7 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'iSaaSIT - Agency Management Platform',
+        title: 'iSaaSIT - Workspace Management Platform',
       },
     ],
     links: [

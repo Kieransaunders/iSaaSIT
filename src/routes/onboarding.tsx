@@ -90,7 +90,7 @@ function OnboardingPage() {
             <CardDescription>
               {isSuccess
                 ? 'Redirecting you to your dashboard...'
-                : 'Set up your agency workspace to get started'}
+                : 'Set up your workspace to get started'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -100,7 +100,7 @@ function OnboardingPage() {
                   <Label htmlFor="org-name">Organization Name</Label>
                   <Input
                     id="org-name"
-                    placeholder="Acme Agency"
+                    placeholder="Acme Inc"
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
                     disabled={isLoading}

@@ -42,13 +42,13 @@ function BillingPage() {
               />
               <UsageCard
                 icon={Users}
-                label="Staff Members"
+                label="Team Members"
                 used={1}
                 max={2}
               />
               <UsageCard
                 icon={UserCircle}
-                label="Client Users"
+                label="External Users"
                 used={0}
                 max={10}
               />
@@ -65,11 +65,11 @@ function BillingPage() {
         <PlanCard
           name="Free"
           price="$0"
-          description="For small agencies getting started"
+          description="For small teams getting started"
           features={[
             "Up to 3 customers",
-            "Up to 2 staff members",
-            "Up to 10 client users",
+            "Up to 2 team members",
+            "Up to 10 external users",
             "Basic support",
           ]}
           current
@@ -77,11 +77,11 @@ function BillingPage() {
         <PlanCard
           name="Pro"
           price="$29"
-          description="For growing agencies"
+          description="For growing teams"
           features={[
             "Up to 25 customers",
-            "Up to 10 staff members",
-            "Up to 100 client users",
+            "Up to 10 team members",
+            "Up to 100 external users",
             "Priority support",
             "Custom branding",
           ]}
@@ -89,11 +89,11 @@ function BillingPage() {
         <PlanCard
           name="Enterprise"
           price="Custom"
-          description="For large agencies"
+          description="For large teams"
           features={[
             "Unlimited customers",
-            "Unlimited staff members",
-            "Unlimited client users",
+            "Unlimited team members",
+            "Unlimited external users",
             "24/7 dedicated support",
             "Custom integrations",
             "SLA guarantee",
