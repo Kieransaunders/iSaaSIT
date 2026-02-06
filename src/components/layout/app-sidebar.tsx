@@ -1,4 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import {
   Building2,
   Users,
@@ -9,7 +11,7 @@ import {
   UserCircle,
   BookOpen,
 } from "lucide-react";
-import { BLOG_URL } from "@/lib/constants";
+import { BLOG_URL, DOCS_URL } from "@/lib/constants";
 import {
   Sidebar,
   SidebarContent,
@@ -83,6 +85,7 @@ const resourceNavItems = [
 export function AppSidebar() {
   const location = useLocation();
   const { signOut, user } = useAuth();
+  const org = useQuery(api.orgs.get.getMyOrg);
 
   const getInitials = (name?: string | null, email?: string) => {
     if (name) {
@@ -113,7 +116,7 @@ export function AppSidebar() {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">iSaaSIT</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Agency Portal
+                    {org?.name || "Workspace"}
                   </span>
                 </div>
               </Link>
