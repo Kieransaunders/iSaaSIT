@@ -5,13 +5,72 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Building2, Bell, Shield } from 'lucide-react';
+import { Settings, Building2, Bell, Shield, Loader2 } from 'lucide-react';
+import { useQuery, useAction } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { useState, useEffect } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const Route = createFileRoute('/_authenticated/settings')({
   component: SettingsPage,
 });
 
 function SettingsPage() {
+  const org = useQuery(api.orgs.get.getMyOrg);
+  const updateOrg = useAction(api.workos.updateOrg.updateOrganization);
+
+  const [orgName, setOrgName] = useState('');
+  const [billingEmail, setBillingEmail] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Initialize form when org loads
+  useEffect(() => {
+    if (org) {
+      setOrgName(org.name);
+      setBillingEmail(org.billingEmail || '');
+    }
+  }, [org]);
+
+  // Check if form has changes
+  const hasChanges = org && (
+    orgName !== org.name ||
+    billingEmail !== (org.billingEmail || '')
+  );
+
+  const handleSave = async () => {
+    if (!hasChanges) return;
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      await updateOrg({
+        name: orgName !== org?.name ? orgName : undefined,
+        billingEmail: billingEmail !== org?.billingEmail ? billingEmail : undefined,
+      });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : 'Failed to save changes'
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Show loading state
+  if (org === undefined) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -36,16 +95,43 @@ function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="org-name">Organization Name</Label>
-              <Input id="org-name" placeholder="Enter organization name" />
+              <Input
+                id="org-name"
+                placeholder="Enter organization name"
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
+              />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="org-slug">Slug</Label>
-              <Input id="org-slug" placeholder="your-organization" />
+              <Label htmlFor="billing-email">Billing Email</Label>
+              <Input
+                id="billing-email"
+                type="email"
+                placeholder="billing@example.com"
+                value={billingEmail}
+                onChange={(e) => setBillingEmail(e.target.value)}
+              />
               <p className="text-xs text-muted-foreground">
-                Used in URLs and API requests
+                Where we'll send invoices and billing updates
               </p>
             </div>
-            <Button>Save Changes</Button>
+            <Button
+              onClick={handleSave}
+              disabled={!hasChanges || isSaving}
+            >
+              {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Save Changes
+            </Button>
+            {saveError && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription>{saveError}</AlertDescription>
+              </Alert>
+            )}
+            {saveSuccess && (
+              <Alert className="mt-4">
+                <AlertDescription>Changes saved successfully!</AlertDescription>
+              </Alert>
+            )}
           </CardContent>
         </Card>
 
