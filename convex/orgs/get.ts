@@ -1,5 +1,5 @@
-import { query } from "../_generated/server";
-import { ConvexError } from "convex/values";
+import { query, internalQuery } from "../_generated/server";
+import { v, ConvexError } from "convex/values";
 
 /**
  * Get the current user's organization
@@ -87,5 +87,28 @@ export const hasOrg = query({
       isAuthenticated: true,
       role: userRecord?.role,
     };
+  },
+});
+
+/**
+ * Internal query to get user's org by WorkOS user ID
+ * Used by actions that need org context
+ */
+export const getMyOrgInternal = internalQuery({
+  args: {
+    workosUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userRecord = await ctx.db
+      .query("users")
+      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", args.workosUserId))
+      .first();
+
+    if (!userRecord?.orgId) {
+      return null;
+    }
+
+    const org = await ctx.db.get(userRecord.orgId);
+    return org;
   },
 });
