@@ -90,6 +90,21 @@ Agencies can spin up new client projects with proper data isolation, billing enf
 | Roles in WorkOS not Convex | Single source of truth, WorkOS handles membership | — Pending |
 | shadcn/ui for components | Accessible, customizable, works with Tailwind | — Pending |
 
+## Milestones
+
+### v1.0: SaaS Starter Kit Foundation (Active)
+Multi-tenant foundation with auth, org management, team invites, billing. Phases 1-3.
+
+### v2.0: Admin Console (Planned)
+**Goal:** Platform-level admin dashboard — separate `/admin` route as an "app within the app" with its own sidebar and views. Enables the SaaS operator to manage all orgs, impersonate users, view platform metrics, and configure system settings.
+
+**Target features:**
+- Platform super admin role (above org-level admin)
+- All Orgs view with impersonation
+- Platform metrics dashboard (orgs, users, revenue, growth)
+- Cross-org user management (suspend, reset, unsuspend)
+- System settings (config, feature flags, billing plans, webhook logs)
+
 ## Repository
 
 **GitHub:** https://github.com/Kieransaunders/iSaaSIT.git
@@ -97,4 +112,4 @@ Agencies can spin up new client projects with proper data isolation, billing enf
 **License:** MIT
 
 ---
-*Last updated: 2025-02-04 after initialization*
+*Last updated: 2026-02-06 after v2.0 milestone definition*
