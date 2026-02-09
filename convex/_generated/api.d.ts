@@ -16,6 +16,8 @@ import type * as invitations_internal from "../invitations/internal.js";
 import type * as invitations_manage from "../invitations/manage.js";
 import type * as invitations_queries from "../invitations/queries.js";
 import type * as invitations_send from "../invitations/send.js";
+import type * as lemonsqueezy_plans from "../lemonsqueezy/plans.js";
+import type * as lemonsqueezy_signature from "../lemonsqueezy/signature.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as orgs_create from "../orgs/create.js";
 import type * as orgs_get from "../orgs/get.js";
@@ -44,6 +46,8 @@ declare const fullApi: ApiFromModules<{
   "invitations/manage": typeof invitations_manage;
   "invitations/queries": typeof invitations_queries;
   "invitations/send": typeof invitations_send;
+  "lemonsqueezy/plans": typeof lemonsqueezy_plans;
+  "lemonsqueezy/signature": typeof lemonsqueezy_signature;
   myFunctions: typeof myFunctions;
   "orgs/create": typeof orgs_create;
   "orgs/get": typeof orgs_get;
