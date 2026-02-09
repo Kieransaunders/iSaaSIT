@@ -10,6 +10,7 @@
 
 import type * as assignments_mutations from "../assignments/mutations.js";
 import type * as assignments_queries from "../assignments/queries.js";
+import type * as billing_actions from "../billing/actions.js";
 import type * as billing_queries from "../billing/queries.js";
 import type * as customers_crud from "../customers/crud.js";
 import type * as http from "../http.js";
@@ -43,6 +44,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "assignments/mutations": typeof assignments_mutations;
   "assignments/queries": typeof assignments_queries;
+  "billing/actions": typeof billing_actions;
   "billing/queries": typeof billing_queries;
   "customers/crud": typeof customers_crud;
   http: typeof http;

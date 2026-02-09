@@ -56,6 +56,10 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 | Include pending invitations in usage counts | 03-02 | Prevents race condition exceeding plan limits | Usage queries count active + pending for staff/clients |
 | Build checkout URLs via string construction | 03-02 | Frontend uses Lemon.js overlay, SDK not needed | Simpler implementation, pre-fills org data for webhook |
 | Return null for customer portal URL when no subscription | 03-02 | Not an error - user hasn't subscribed yet | UI can gracefully handle null (hide invoice link) |
+| Web Crypto API for Lemon Squeezy signature verification | 03-01 | Convex HTTP actions cannot use Node.js crypto module | Pattern for all webhook signature verification in Convex |
+| Placeholder variant IDs in plan config | 03-01 | User must create products in Lemon Squeezy dashboard first | Requires manual setup step documented in USER-SETUP.md |
+| Cancelled subscriptions keep limits until endsAt | 03-01 | Lemon Squeezy grace period allows access until period ends | UI must show 'Active until [date]' for cancelled subscriptions |
+| Store trialEndsAt and endsAt timestamps on org | 03-01 | UI needs to display trial countdown and grace period | Schema extended with optional timestamp fields |
 | Client-side tab filtering for team page | 02-04 | Single query, instant tab switching, better UX | May need pagination for orgs with 1000+ users |
 | Separate TeamTable and PendingTable components | 02-04 | Different data shapes require distinct components | Pattern for specialized table components |
 | Console.error for async errors (not toasts yet) | 02-04 | Toast system not implemented | Replace with toast notifications in future |
