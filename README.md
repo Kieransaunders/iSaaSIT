@@ -1,20 +1,36 @@
 # iSaaSIT 🚀
 
-**A free, open-source SaaS starter kit for agencies and freelancers. Built with Convex, TanStack Start, and WorkOS AuthKit.**
+**The open-source starter kit for agencies managing client companies. Launch your client portal with proper data isolation, team assignments, and role-based access—without rebuilding the foundation every time.**
 
 ![iSaaSIT Homepage](screenshots/homepage.png)
 
+## Who This Is For
+
+**iSaaSIT is built specifically for agencies and service businesses** that manage multiple client companies:
+
+- 🎨 **Design & Creative Agencies** - Manage client projects with isolated workspaces
+- 💼 **Consulting Firms** - Give clients portal access to their engagements
+- 📊 **Accounting & Legal Practices** - Secure client data with proper isolation
+- 💻 **Development Shops** - Manage client projects and team assignments
+- 📈 **Marketing Agencies** - Client dashboards for campaigns and reporting
+- 🔧 **IT Service Providers** - Client portals for managed services
+
+**The architecture:** Your agency (Org) → Client Companies (Customers) → Team Members + Client Users
+
+If you need data isolation between clients, team assignments to specific accounts, and client portal access, this is your starting point.
+
 ## What's inside?
 
-This template gives you everything you need to launch a multi-tenant SaaS in record time:
+Everything you need to build your client portal:
 
-✅ **Fully open-source** - No proprietary code, completely free to use and modify  
-✅ **Multi-tenant architecture** - Manage multiple clients with proper data isolation  
-✅ **Authentication ready** - Enterprise-grade auth with WorkOS AuthKit + social login  
-✅ **Role-based access** - Admin, Staff, and Client roles built-in  
-✅ **Modern stack** - React 19, TanStack Start, Convex, Tailwind CSS v4  
-✅ **Type-safe** - End-to-end TypeScript with inferred types from backend to frontend  
-✅ **AI-Ready** - Cursor rules, Claude Code skills, and GSD integration for AI-assisted development
+✅ **Client data isolation** - Each client company only sees their own data
+✅ **Team assignments** - Assign staff members to specific client accounts
+✅ **Role-based access** - Admin (agency owner), Staff (your team), Client (customer users)
+✅ **Enterprise auth** - WorkOS AuthKit with SSO, social login, and magic links
+✅ **Usage-based billing** - Lemon Squeezy integration with client/staff limits
+✅ **Modern stack** - React 19, TanStack Start, Convex, Tailwind CSS v4
+✅ **Type-safe** - End-to-end TypeScript from backend to frontend
+✅ **AI-Ready** - Cursor rules, Claude Code skills, and GSD integration
 
 > **🎨 New:** 6 Claude Code skills now bundled in the repo, including **ui-ux-pro-max** for instant design system generation (50+ styles, 97 palettes, 57 font pairings). Use `/ui-ux-pro-max`, `/convex`, `/tanstack` and more - no setup required!
 

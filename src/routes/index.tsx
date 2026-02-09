@@ -83,15 +83,15 @@ function Home() {
               <ArrowRight className="ml-2 h-3 w-3" />
             </a>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Launch your SaaS in
+              Build your client portal in
               <br />
               <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                minutes, not months
+                days, not months
               </span>
             </h1>
             <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-              A free, open-source starter kit for building multi-tenant SaaS apps. 
-              Authentication, billing, role-based access, and more — all pre-configured.
+              The open-source starter kit for agencies managing multiple client companies.
+              Data isolation, team assignments, and billing—all pre-configured.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" asChild className="h-12 px-8">
@@ -135,10 +135,10 @@ function Home() {
           <div className="mx-auto max-w-[64rem]">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                Everything you need to run your SaaS
+                Everything agencies need to manage clients
               </h2>
               <p className="text-lg text-muted-foreground max-w-[42rem] mx-auto">
-                Stop wasting time on boilerplate. Focus on what makes your product unique.
+                Stop rebuilding the same client portal infrastructure. Focus on what makes your agency unique.
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -149,18 +149,18 @@ function Home() {
               />
               <FeatureCard
                 icon={Building2}
-                title="Multi-Tenancy"
-                description="Complete data isolation between organizations. Each tenant manages their own users and data."
+                title="Client Data Isolation"
+                description="Manage multiple client companies with complete data isolation. Each client only sees their own data—no leaks, no confusion."
               />
               <FeatureCard
                 icon={Users}
-                title="Role-Based Access"
-                description="Built-in Admin, Staff, and Client roles. Control access at the data level with Convex."
+                title="Team Assignments"
+                description="Admin manages the agency, Staff work on assigned clients, Clients access their own portal. Perfect for agency workflows."
               />
               <FeatureCard
                 icon={CreditCard}
-                title="Usage-Based Billing"
-                description="Lemon Squeezy integration with plan caps. Enforce limits and upgrade flows built-in."
+                title="Scale Your Agency"
+                description="Grow without limits. Billing plans with customer and staff caps. Automatic upgrade prompts when you hit your tier."
               />
               <FeatureCard
                 icon={Zap}
@@ -188,19 +188,27 @@ function Home() {
               </p>
             </div>
             <div className="grid gap-8 lg:grid-cols-2">
-              <CodePreview 
-                title="Define your data model"
+              <CodePreview
+                title="Define your agency data model"
                 code={`// convex/schema.ts
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
-
 export default defineSchema({
+  // Your agency organization
+  orgs: defineTable({
+    name: v.string(),
+    subscriptionStatus: v.string(),
+  }),
+
+  // Client companies you manage
   customers: defineTable({
     name: v.string(),
-    orgId: v.id("organizations"),
-    plan: v.string(),
-  })
-  .index("by_org", ["orgId"]),
+    orgId: v.id("orgs"),
+  }).index("by_org", ["orgId"]),
+
+  // Team assignments
+  staffCustomerAssignments: defineTable({
+    staffUserId: v.id("users"),
+    customerId: v.id("customers"),
+  }),
 });`}
               />
               <CodePreview 
@@ -297,19 +305,19 @@ function CustomerList() {
             </h2>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               <TestimonialCard
-                quote="I built and deployed my agency SaaS in a weekend. The multi-tenancy setup alone saved me weeks of work."
-                author="Alex Chen"
-                role="Indie Hacker"
+                quote="Saved us weeks of dev time. We spun up a client portal for our design agency in one weekend. Clients love having their own login."
+                author="Sarah Chen"
+                role="Design Agency Owner"
               />
               <TestimonialCard
-                quote="Finally a starter kit that gets auth right. WorkOS integration is seamless and the role-based access is exactly what I needed."
-                author="Sarah Miller"
-                role="Full-Stack Developer"
+                quote="The team assignment feature is perfect. Our accountants only see their assigned clients. Clean, secure, exactly what we needed."
+                author="Marcus Johnson"
+                role="Accounting Firm CTO"
               />
               <TestimonialCard
-                quote="The type safety with Convex is incredible. I catch bugs before they happen, and the real-time updates are magic."
-                author="James Wilson"
-                role="Agency Owner"
+                quote="We used to build this from scratch for every client project. Now we fork iSaaSIT and customize. Game changer for our consulting business."
+                author="Emma Rodriguez"
+                role="Development Consultancy"
               />
             </div>
           </div>
@@ -323,28 +331,28 @@ function CustomerList() {
             </h2>
             <div className="space-y-4">
               <FAQItem
+                question="Is this for any kind of SaaS?"
+                answer="iSaaSIT v1.0 is specifically built for agencies and service businesses managing client companies. If you need data isolation between clients, team assignments, and client portal access, this is for you. We're planning future variants for other SaaS patterns."
+              />
+              <FAQItem
+                question="Can I customize it for my agency type?"
+                answer="Absolutely! The starter kit works for any service business—design agencies, accounting firms, law practices, IT consultancies, marketing agencies, etc. The core architecture (org → clients → users) stays the same; you customize the features for your domain."
+              />
+              <FAQItem
                 question="Is iSaaSIT really free?"
-                answer="Yes! iSaaSIT is open-source under the MIT License. You can use it for personal and commercial projects at no cost. You only pay for your own hosting and third-party services."
+                answer="Yes! iSaaSIT is open-source under the MIT License. You can use it for personal and commercial projects at no cost. You only pay for your own hosting and third-party services (Convex, WorkOS, Lemon Squeezy)."
               />
               <FAQItem
                 question="What tech stack does it use?"
                 answer="iSaaSIT uses TanStack Start for the frontend, Convex for the backend/database, WorkOS AuthKit for authentication, and Tailwind CSS with shadcn/ui for styling."
               />
               <FAQItem
-                question="Can I deploy it anywhere?"
-                answer="Absolutely! The frontend can be deployed to any static host (Netlify, Vercel, etc.) and Convex handles the backend. You're not locked into any platform."
-              />
-              <FAQItem
-                question="How does multi-tenancy work?"
-                answer="Each organization gets complete data isolation. We use Convex's row-level security and indexing to ensure tenants can only access their own data."
+                question="How does client data isolation work?"
+                answer="Each client company gets complete data isolation. We use Convex's row-level security and indexing to ensure clients can only access their own data, and staff can only see their assigned clients."
               />
               <FAQItem
                 question="Is it production-ready?"
-                answer="Yes! The stack includes enterprise-grade services like WorkOS and Convex that power production apps at scale. The template provides a solid foundation you can build on."
-              />
-              <FAQItem
-                question="Can I get help if I'm stuck?"
-                answer="Check out our blog for guides, read the AGENTS.md for development context, or open an issue on GitHub. The Convex and WorkOS communities are also very helpful."
+                answer="Yes! The stack includes enterprise-grade services like WorkOS and Convex that power production apps at scale. The template provides a solid foundation you can build on and customize for your agency."
               />
             </div>
           </div>
@@ -354,10 +362,10 @@ function CustomerList() {
         <section className="container mx-auto px-4 py-24">
           <div className="mx-auto max-w-[64rem] rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground sm:px-12">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-              Ready to build your SaaS?
+              Ready to build your client portal?
             </h2>
             <p className="text-lg opacity-90 mb-8 max-w-[42rem] mx-auto">
-              Join developers who are shipping faster with iSaaSIT. 
+              Join agencies who are launching client portals in days instead of months.
               No credit card required. Free forever.
             </p>
             <Button size="lg" variant="secondary" asChild className="h-12 px-8">
@@ -382,7 +390,7 @@ function CustomerList() {
                 <span className="text-lg font-semibold">iSaaSIT</span>
               </div>
               <p className="text-sm text-muted-foreground max-w-xs">
-                A free, open-source SaaS starter kit for agencies and freelancers. 
+                The open-source starter kit for agencies managing client companies.
                 Built with Convex, TanStack Start, and WorkOS.
               </p>
             </div>

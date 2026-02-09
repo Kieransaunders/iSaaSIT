@@ -2,11 +2,13 @@
 
 ## What This Is
 
-An open-source SaaS starter kit for agencies and freelancers who need a repeatable client project template. Provides multi-tenant foundation where an agency (Org) manages multiple client companies (Customers) with role-based data isolation, billing with usage caps, and a client portal. Built on WorkOS AuthKit + Convex + TanStack Start.
+The open-source SaaS starter kit for agencies and service businesses managing client companies. Provides a repeatable foundation for building client portals with data isolation, team assignments, and role-based access. Built on WorkOS AuthKit + Convex + TanStack Start.
+
+**Architecture:** Your agency (Org) manages multiple client companies (Customers) with proper data isolation, billing with usage caps, and team member assignments.
 
 ## Core Value
 
-Agencies can spin up new client projects with proper data isolation, billing enforcement, and role-based access without rebuilding auth/tenancy/billing infrastructure each time.
+Agencies can launch client portals with proper data isolation, billing enforcement, and role-based access without rebuilding auth/tenancy/billing infrastructure each time. Fork, customize for your domain, and ship.
 
 ## Requirements
 
