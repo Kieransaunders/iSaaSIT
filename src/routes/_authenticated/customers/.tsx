@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Building2, ArrowLeft, Save, Loader2, Calendar, Mail, FileText } from 'lucide-react';
+import { Building2, ArrowLeft, Save, Loader2, Calendar, Mail, FileText, X, UserPlus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 
@@ -19,9 +20,19 @@ export const Route = createFileRoute('/_authenticated/customers/$customerId')({
 function CustomerDetailPage() {
   const { customerId } = useParams({ from: '/_authenticated/customers/$customerId' });
   const navigate = useNavigate();
-  
+
   const customer = useQuery(api.customers.crud.getCustomer, { customerId: customerId as any });
   const updateCustomer = useMutation(api.customers.crud.updateCustomer);
+
+  // User role check for admin-only features
+  const userInfo = useQuery(api.orgs.get.hasOrg);
+  const isAdmin = userInfo?.role === 'admin';
+
+  // Staff assignment queries and mutations
+  const assignedStaff = useQuery(api.assignments.queries.listAssignedStaff, { customerId: customerId as any });
+  const availableStaff = useQuery(api.assignments.queries.listAvailableStaff, { customerId: customerId as any });
+  const assignStaffMutation = useMutation(api.assignments.mutations.assignStaff);
+  const unassignStaffMutation = useMutation(api.assignments.mutations.unassignStaff);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -44,7 +55,7 @@ function CustomerDetailPage() {
 
   const handleSave = async () => {
     if (!formData.name.trim()) return;
-    
+
     setIsSaving(true);
     try {
       await updateCustomer({
@@ -56,6 +67,28 @@ function CustomerDetailPage() {
       setIsEditing(false);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleAssignStaff = async (staffUserId: string) => {
+    try {
+      await assignStaffMutation({
+        customerId: customerId as any,
+        userId: staffUserId as any,
+      });
+    } catch (error) {
+      console.error('Failed to assign staff:', error);
+    }
+  };
+
+  const handleUnassignStaff = async (staffUserId: string) => {
+    try {
+      await unassignStaffMutation({
+        customerId: customerId as any,
+        userId: staffUserId as any,
+      });
+    } catch (error) {
+      console.error('Failed to unassign staff:', error);
     }
   };
 
@@ -224,23 +257,86 @@ function CustomerDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Placeholder for future features */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Team</CardTitle>
-              <CardDescription>
-                Staff assigned to this customer
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                No staff assigned yet. Assign staff members to give them access to this customer.
-              </p>
-              <Button variant="outline" className="w-full mt-4" disabled>
-                Assign Staff (coming soon)
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Staff Assignment Card - Admin Only */}
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Assigned Staff</CardTitle>
+                <CardDescription>
+                  Staff members with access to this customer
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* List of assigned staff */}
+                  {assignedStaff === undefined ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ) : assignedStaff.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No staff assigned yet
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {assignedStaff.map((staff) => (
+                        <div
+                          key={staff._id}
+                          className="flex items-center justify-between p-2 rounded-lg border bg-card"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {staff.firstName && staff.lastName
+                                ? `${staff.firstName} ${staff.lastName}`
+                                : staff.email}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {staff.email}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleUnassignStaff(staff._id)}
+                            className="ml-2 h-8 w-8 p-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Assign staff dropdown */}
+                  {availableStaff !== undefined && availableStaff.length > 0 && (
+                    <div className="pt-2 border-t">
+                      <Select onValueChange={handleAssignStaff}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Assign staff..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableStaff.map((staff) => (
+                            <SelectItem key={staff._id} value={staff._id}>
+                              {staff.firstName && staff.lastName
+                                ? `${staff.firstName} ${staff.lastName}`
+                                : staff.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {availableStaff !== undefined && availableStaff.length === 0 && assignedStaff !== undefined && assignedStaff.length > 0 && (
+                    <p className="text-xs text-muted-foreground pt-2 border-t">
+                      All staff members have been assigned
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
