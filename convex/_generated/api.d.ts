@@ -8,7 +8,13 @@
  * @module
  */
 
+import type * as assignments_mutations from "../assignments/mutations.js";
+import type * as assignments_queries from "../assignments/queries.js";
 import type * as customers_crud from "../customers/crud.js";
+import type * as invitations_internal from "../invitations/internal.js";
+import type * as invitations_manage from "../invitations/manage.js";
+import type * as invitations_queries from "../invitations/queries.js";
+import type * as invitations_send from "../invitations/send.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as orgs_create from "../orgs/create.js";
 import type * as orgs_get from "../orgs/get.js";
@@ -25,7 +31,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "assignments/mutations": typeof assignments_mutations;
+  "assignments/queries": typeof assignments_queries;
   "customers/crud": typeof customers_crud;
+  "invitations/internal": typeof invitations_internal;
+  "invitations/manage": typeof invitations_manage;
+  "invitations/queries": typeof invitations_queries;
+  "invitations/send": typeof invitations_send;
   myFunctions: typeof myFunctions;
   "orgs/create": typeof orgs_create;
   "orgs/get": typeof orgs_get;
