@@ -50,6 +50,15 @@ Plans:
 
 **Goal:** Users can invite staff/clients and manage customer assignments
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Schema + invitation backend (send, revoke, resend)
+- [ ] 02-02-PLAN.md — Staff assignment backend + customer detail UI
+- [ ] 02-03-PLAN.md — Webhook handler + user management backend
+- [ ] 02-04-PLAN.md — Team page UI (tabs, invite dialog, member table)
+- [ ] 02-05-PLAN.md — End-to-end verification checkpoint
+
 **Requirements:**
 - TEAM-01: Admin can invite staff users
 - TEAM-02: Admin can invite client users linked to customer
