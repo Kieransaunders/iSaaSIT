@@ -2,7 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-react-start';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
-import { BLOG_URL } from '@/lib/constants';
+import { BLOG_URL, DOCS_URL } from '@/lib/constants';
 import { 
   Building2, Users, Shield, CreditCard, ArrowRight, CheckCircle2, 
   Zap, Lock, Code2, Sparkles, ChevronDown, Github, Twitter, 
