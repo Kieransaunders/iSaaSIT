@@ -92,7 +92,7 @@ Plans:
 
 **Goal:** Working Lemon Squeezy subscriptions with usage cap enforcement
 
-**Plans:** 5 plans
+**Plans:** 6 plans
 
 Plans:
 - [ ] 03-01-PLAN.md — Webhook handler + signature verification + subscription sync
@@ -100,6 +100,7 @@ Plans:
 - [ ] 03-03-PLAN.md — Billing page UI with real data + checkout overlay
 - [ ] 03-04-PLAN.md — Cap enforcement UX + warning banners + inline upgrade prompts
 - [ ] 03-05-PLAN.md — End-to-end verification checkpoint
+- [ ] 03-06-PLAN.md — Gap closure: InviteDialog CapReachedBanner upgrade prompt
 
 **Requirements:**
 - BILL-01: Org has subscription status synced from Lemon Squeezy
