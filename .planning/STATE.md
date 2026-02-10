@@ -14,10 +14,10 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 | Phase | Status | Progress |
 |-------|--------|----------|
 | 1 | ✓ Complete | 100% |
-| 2 | In Progress | 4/5 plans |
-| 3 | In Progress | 2/5 plans |
+| 2 | ✓ Complete | 100% |
+| 3 | In Progress | 3/6 plans |
 
-**Overall:** 24/32 requirements complete (75%)
+**Overall:** 26/32 requirements complete (81%)
 
 ## Phase Status
 
@@ -27,20 +27,22 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 - **Verification:** 12/12 must-haves passed
 - **Plans:** 01-01 ✓, 01-02 ✓, 01-03 ✓
 
-### Phase 2: Team Management
-- **Status:** In progress (4 of 5 plans complete)
-- **Requirements:** TEAM-01 ✓, TEAM-02 ✓, TEAM-03 ✓, TEAM-04 ✓, TEAM-05, TEAM-06, ASSIGN-02 ✓, ASSIGN-03 ✓, ASSIGN-04 ✓
-- **Plans:** 02-01 ✓ (schema + invitation backend), 02-02 ✓ (staff assignment), 02-03 ✓ (webhook + user management), 02-04 ✓ (team UI)
-- **Blockers:** WorkOS webhook must be configured for invitation.accepted to attach users to orgs in Convex
+### Phase 2: Team Management ✓
+- **Status:** Complete (5 of 5 plans complete, 2026-02-10)
+- **Requirements:** TEAM-01 ✓, TEAM-02 ✓, TEAM-03 ✓, TEAM-04 ✓, TEAM-05 ✓, TEAM-06 ✓, ASSIGN-02 ✓, ASSIGN-03 ✓, ASSIGN-04 ✓
+- **Plans:** 02-01 ✓ (schema + invitation backend), 02-02 ✓ (staff assignment), 02-03 ✓ (webhook + user management), 02-04 ✓ (team UI), 02-05 ✓ (verification + bug fixes)
+- **Bug fixes applied:** Index optimization, orphaned invitation cleanup, resend cap checks
 
 ### Phase 3: Billing
-- **Status:** In progress (2 of 6 plans complete)
+- **Status:** In progress (3 of 6 plans complete)
 - **Requirements:** BILL-01 to BILL-06
-- **Plans:** 03-01 ✓ (webhook + sync), 03-02 ✓ (billing backend)
-- **Blockers:** Plan limit mapping must use Lemon Squeezy variant IDs (PLAN_TIERS keys) or billing will default to free limits
+- **Plans:** 03-01 ✓ (webhook + sync), 03-02 ✓ (billing backend), 03-06 ✓ (InviteDialog CapReachedBanner prompt)
+- **Blockers:** Real Lemon Squeezy checkout + webhook verification pending (test mode)
 
 ## Recent Activity
 
+- 2026-02-10: Plan 03-06 complete — Invite flow shows CapReachedBanner at limits
+- 2026-02-10: Phase 2 signed off — Invite flow bug fixes (index optimization, orphaned invitation cleanup, resend cap checks)
 - 2026-02-09: Plan 03-02 complete — Billing backend operations (usage queries, checkout URL, subscription cancellation)
 - 2026-02-09: Plan 03-01 complete — Lemon Squeezy webhook handler and subscription sync
 - 2026-02-09: Plan 02-04 complete — Team management UI with tabbed interface, invite dialog, member/invitation tables
@@ -77,18 +79,15 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 | Resend = revoke + send (no native resend) | 02-01 | WorkOS SDK pattern | Standard for invitation lifecycle management |
 
 ### Pending Todos
-1. Update plan limit mapping in convex/lemonsqueezy/plans.ts to use actual Lemon Squeezy variant IDs (area: billing-config)
+1. Verify Lemon Squeezy checkout + webhook end-to-end (test mode) (area: billing-setup)
 2. Enforce admin role on org settings updates (workos.updateOrganization) (area: security)
 3. Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments) (area: security)
 4. Handle customer deletion with client users/invites (block or cascade cleanup) (area: data-integrity)
-5. Enforce org onboarding redirect in /_authenticated layout (area: auth-guard)
-6. Clarify/implement restore-user behavior (reinvite vs restore), adjust UI accordingly (area: ux)
-7. Configure WorkOS webhook endpoint for invitation.accepted events (area: workos-setup) - REQUIRED for invitation acceptance to work end-to-end
-8. Configure Lemon Squeezy webhook endpoint and environment variables (area: billing-setup) - REQUIRED for billing operations
-9. Add CapReachedBanner to invite flow (area: billing-ux)
-10. Update docs to reflect billing is implemented and required Convex env vars (area: docs)
-11. Replace agency copy with generic workspace terminology (area: ui)
-12. Run v1 smoke test checklist and update requirement statuses (area: verification)
+5. Clarify/implement restore-user behavior (reinvite vs restore), adjust UI accordingly (area: ux)
+6. Configure WorkOS webhook endpoint for invitation.accepted events (area: workos-setup) - REQUIRED for invitation acceptance to work end-to-end
+7. Configure Lemon Squeezy webhook endpoint and environment variables (area: billing-setup) - REQUIRED for billing operations
+8. Replace agency copy with generic workspace terminology (area: ui)
+9. Run v1 smoke test checklist and update requirement statuses (area: verification)
 
 ## Next Action
 

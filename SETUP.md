@@ -229,7 +229,11 @@ VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID=67890
 ```bash
 npx convex env set LEMONSQUEEZY_API_KEY your_api_key
 npx convex env set LEMONSQUEEZY_WEBHOOK_SECRET your_webhook_secret
+npx convex env set LEMONSQUEEZY_PRO_VARIANT_ID your_pro_variant_id
+npx convex env set LEMONSQUEEZY_BUSINESS_VARIANT_ID your_business_variant_id
 ```
+
+These variant IDs should match the `VITE_LEMONSQUEEZY_*_VARIANT_ID` values in your `.env.local`.
 
 ### 7. Test Billing
 

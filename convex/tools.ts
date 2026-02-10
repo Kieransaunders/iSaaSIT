@@ -28,6 +28,12 @@ export const getStatus = query({
       webhookSecretSet: v.boolean(),
       apiKeyIsTest: v.optional(v.boolean()),
     }),
+    billing: v.object({
+      apiKeySet: v.boolean(),
+      webhookSecretSet: v.boolean(),
+      proVariantIdSet: v.boolean(),
+      businessVariantIdSet: v.boolean(),
+    }),
   }),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -47,6 +53,10 @@ export const getStatus = query({
     const apiKey = process.env.WORKOS_API_KEY;
     const clientId = process.env.WORKOS_CLIENT_ID;
     const webhookSecret = process.env.WORKOS_WEBHOOK_SECRET;
+    const billingApiKey = process.env.LEMONSQUEEZY_API_KEY;
+    const billingWebhookSecret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+    const proVariantId = process.env.LEMONSQUEEZY_PRO_VARIANT_ID;
+    const businessVariantId = process.env.LEMONSQUEEZY_BUSINESS_VARIANT_ID;
 
     return {
       convex: {
@@ -58,6 +68,12 @@ export const getStatus = query({
         apiKeySet: !!apiKey,
         webhookSecretSet: !!webhookSecret,
         apiKeyIsTest: apiKey ? isTestApiKey(apiKey) : undefined,
+      },
+      billing: {
+        apiKeySet: !!billingApiKey,
+        webhookSecretSet: !!billingWebhookSecret,
+        proVariantIdSet: !!proVariantId,
+        businessVariantIdSet: !!businessVariantId,
       },
     };
   },

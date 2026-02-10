@@ -121,12 +121,14 @@ export const sendInvitation = action({
       }
     }
 
+    let invitation;
+    
     try {
       // Initialize WorkOS client
       const workos = new WorkOS(process.env.WORKOS_API_KEY);
 
       // Send invitation via WorkOS
-      const invitation = await workos.userManagement.sendInvitation({
+      invitation = await workos.userManagement.sendInvitation({
         organizationId: org.workosOrgId,
         email,
         expiresInDays: 7,
@@ -150,6 +152,16 @@ export const sendInvitation = action({
 
       return { invitationId: invitation.id };
     } catch (error) {
+      // If WorkOS invitation was created but storing failed, clean it up
+      if (invitation?.id) {
+        try {
+          const workos = new WorkOS(process.env.WORKOS_API_KEY);
+          await workos.userManagement.revokeInvitation(invitation.id);
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
+      
       const message = error instanceof Error ? error.message : "Unknown error";
       if (message.toLowerCase().includes("already a member of organization")) {
         throw new ConvexError("User already a member of this organization");

@@ -9,6 +9,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,7 @@ function ToolsPage() {
   const simulateWebhook = useAction(api.tools.simulateWorkOSWebhook);
 
   const [role, setRole] = useState<"staff" | "client">("staff");
-  const [customerId, setCustomerId] = useState<string>("");
+  const [customerId, setCustomerId] = useState<Id<"customers"> | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
   const [lastResult, setLastResult] = useState<{
     ok: boolean;
@@ -85,7 +86,7 @@ function ToolsPage() {
   const canRun =
     !isRunning &&
     email.trim().length > 3 &&
-    (role === "staff" || (role === "client" && customerId));
+    (role === "staff" || !!customerId);
 
   if (orgCheck === undefined) {
     return (
@@ -116,6 +117,16 @@ function ToolsPage() {
   const workosApiState: StatusState = status.workos.apiKeySet ? "ok" : "error";
   const workosWebhookState: StatusState = status.workos.webhookSecretSet ? "ok" : "error";
   const webhookTestState: StatusState = lastResult ? (lastResult.ok ? "ok" : "error") : "unknown";
+  const billingPlanMappingMissing =
+    (status.billing.apiKeySet || status.billing.webhookSecretSet) &&
+    !status.billing.proVariantIdSet &&
+    !status.billing.businessVariantIdSet;
+  const billingPlanMappingState: StatusState = status.billing.proVariantIdSet ||
+    status.billing.businessVariantIdSet
+    ? "ok"
+    : billingPlanMappingMissing
+      ? "warn"
+      : "unknown";
 
   const environmentLabel = import.meta.env.DEV ? "Development" : "Production";
   const apiKeyIsTest = status.workos.apiKeyIsTest === true;
@@ -157,7 +168,7 @@ function ToolsPage() {
         <p className="text-muted-foreground">Environment status and integration checks</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-4">
         <Card>
           <CardHeader>
             <CardTitle>Environment</CardTitle>
@@ -230,6 +241,43 @@ function ToolsPage() {
             )}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Billing</CardTitle>
+            <CardDescription>Optional Lemon Squeezy checks</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <StatusRow
+              label="API Key"
+              value={status.billing.apiKeySet ? "Set" : "Missing"}
+              state={status.billing.apiKeySet ? "ok" : "warn"}
+            />
+            <StatusRow
+              label="Webhook Secret"
+              value={status.billing.webhookSecretSet ? "Set" : "Missing"}
+              state={status.billing.webhookSecretSet ? "ok" : "warn"}
+            />
+            <StatusRow
+              label="Plan Mapping"
+              value={
+                status.billing.proVariantIdSet || status.billing.businessVariantIdSet
+                  ? "Ready"
+                  : "Missing variant IDs"
+              }
+              state={billingPlanMappingState}
+            />
+            {billingPlanMappingMissing && (
+              <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-900 dark:text-amber-100">
+                  Lemon Squeezy is configured, but no plan variant IDs are set in Convex.
+                  Paid subscriptions will default to free tier limits.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
@@ -252,7 +300,13 @@ function ToolsPage() {
               <Label>Role</Label>
               <Select
                 value={role}
-                onValueChange={(value) => setRole(value as "staff" | "client")}
+                onValueChange={(value) => {
+                  const nextRole = value as "staff" | "client";
+                  setRole(nextRole);
+                  if (nextRole !== "client") {
+                    setCustomerId(undefined);
+                  }
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select role" />
@@ -269,8 +323,8 @@ function ToolsPage() {
             <div className="space-y-2">
               <Label>Customer</Label>
               <Select
-                value={customerId}
-                onValueChange={(value) => setCustomerId(value)}
+                value={customerId ?? ""}
+                onValueChange={(value) => setCustomerId(value as Id<"customers">)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select customer" />

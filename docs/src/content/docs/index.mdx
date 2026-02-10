@@ -1,9 +1,9 @@
 ---
 title: iSaaSIT Documentation
-description: Documentation for iSaaSIT - Open source SaaS starter kit for agencies
+description: Documentation for iSaaSIT - SaaS starter pack for agencies building client portals
 template: splash
 hero:
-  tagline: Open source SaaS starter kit designed for agencies and freelancers
+  tagline: The SaaS starter pack for agencies building client portals
   image:
     file: ../../assets/houston.webp
   actions:
@@ -11,7 +11,7 @@ hero:
       link: /guides/introduction/
       icon: right-arrow
     - text: View on GitHub
-      link: https://github.com/workos/template-convex-tanstack-start-authkit
+      link: https://github.com/Kieransaunders/iSaaSIT
       icon: external
       variant: minimal
 ---
@@ -20,25 +20,25 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## What is iSaaSIT?
 
-iSaaSIT is an open-source SaaS starter kit designed for agencies and freelancers who need a repeatable client project template.
+iSaaSIT is a **SaaS starter pack for agencies** who want to build **client portals**—giving their customers a secure, self-service platform to access project data, documents, and collaborate with your team.
 
 <CardGrid stagger>
+  <Card title="Client Portal Ready" icon="users">
+    Launch a branded client portal where your customers can log in, view their projects, download files, and communicate with your team.
+  </Card>
   <Card title="Multi-Tenant Architecture" icon="cloud">
-    Manage multiple client companies with proper data isolation using Organizations and Customers.
+    Manage all your clients from one platform with complete data isolation. Each client only sees their own data.
   </Card>
   <Card title="Role-Based Access Control" icon="lock">
-    Built-in roles (Admin, Staff, Client) with scoped permissions for secure data access.
+    Three built-in roles—Admin (you), Staff (your team), and Client (your customers)—with automatic data scoping.
   </Card>
   <Card title="Authentication Ready" icon="approve-check">
-    Pre-configured WorkOS AuthKit integration with JWT validation and protected routes.
+    Enterprise-grade auth with WorkOS AuthKit. SSO, magic links, and social login supported out of the box.
   </Card>
   <Card title="Modern Stack" icon="rocket">
-    Built with TanStack Start, Convex, React 19, Tailwind CSS v4, and TypeScript.
+    Built with TanStack Start, Convex, React 19, Tailwind CSS v4, and TypeScript for rapid development.
   </Card>
   <Card title="Billing Integration" icon="credit-card">
-    Planned Lemon Squeezy integration for usage-based billing with plan caps.
-  </Card>
-  <Card title="Client Portal" icon="users">
-    Self-service portal for clients to manage their own data and users.
+    Monetize your client portal with Lemon Squeezy integration. Usage-based billing and subscription management included.
   </Card>
 </CardGrid>

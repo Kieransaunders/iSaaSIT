@@ -33,14 +33,14 @@
 - [x] **SCOPE-03**: Client sees only their customer
 - [x] **SCOPE-04**: Access denied if user tries to access other customer
 
-### Team Management (In Progress)
+### Team Management (Complete)
 
 - [x] **TEAM-01**: Admin can invite staff users
 - [x] **TEAM-02**: Admin can invite client users linked to customer
 - [x] **TEAM-03**: Staff/Client receives email invite
 - [x] **TEAM-04**: Invited user completes signup via WorkOS
-- [ ] **TEAM-05**: Admin can view list of org members
-- [ ] **TEAM-06**: Admin can remove users from org
+- [x] **TEAM-05**: Admin can view list of org members
+- [x] **TEAM-06**: Admin can remove users from org
 
 Note: TEAM-04 requires the WorkOS `invitation.accepted` webhook to be configured to attach users to orgs in Convex.
 
@@ -64,16 +64,17 @@ Note: Billing backend/UI exist but require Lemon Squeezy webhook config and vari
 
 ### Release Readiness (v1 Ship Blockers)
 
-- [ ] Fix Lemon Squeezy plan mapping to use real variant IDs in `convex/lemonsqueezy/plans.ts`
+- [x] Fix Lemon Squeezy plan mapping to use real variant IDs in `convex/lemonsqueezy/plans.ts`
 - [ ] Enforce admin role on org settings updates (`convex/workos/updateOrg.ts`)
 - [ ] Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments)
 - [ ] Handle customer deletion with client users/invites (block or cascade cleanup)
-- [ ] Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
+- [x] Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
 - [ ] Clarify restore-user behavior (reinvite vs restore), adjust UI accordingly
 - [ ] Configure WorkOS webhook endpoint and `WORKOS_WEBHOOK_SECRET`
 - [ ] Configure Lemon Squeezy webhook endpoint and environment variables
-- [ ] Add CapReachedBanner to invite flow
-- [ ] Update docs to reflect billing is implemented and required Convex env vars
+- [ ] Verify Lemon Squeezy checkout + webhook end-to-end (test mode)
+- [x] Add CapReachedBanner to invite flow
+- [x] Update docs to reflect billing is implemented and required Convex env vars
 - [ ] Run v1 smoke test checklist and update requirement statuses
 
 ## v2 Requirements
@@ -129,8 +130,8 @@ Note: Billing backend/UI exist but require Lemon Squeezy webhook config and vari
 | TEAM-02 | 2 | Complete |
 | TEAM-03 | 2 | Complete |
 | TEAM-04 | 2 | Complete |
-| TEAM-05 | 2 | Pending |
-| TEAM-06 | 2 | Pending |
+| TEAM-05 | 2 | Complete |
+| TEAM-06 | 2 | Complete |
 | ASSIGN-01 | - | Complete |
 | ASSIGN-02 | 2 | Complete |
 | ASSIGN-03 | 2 | Complete |
@@ -144,8 +145,8 @@ Note: Billing backend/UI exist but require Lemon Squeezy webhook config and vari
 
 **Coverage:**
 - v1 requirements: 32 total
-- Complete: 24 (75%)
-- Pending: 8 (25%)
+- Complete: 26 (81%)
+- Pending: 6 (19%)
 
 ---
 *Requirements defined: 2025-02-04*

@@ -25,7 +25,6 @@ export const listCustomers = query({
     if (!userRecord?.orgId) {
       throw new ConvexError("User not associated with an organization");
     }
-
     const orgId = userRecord.orgId;
     const role = userRecord.role;
 
@@ -87,6 +86,7 @@ export const getCustomer = query({
     if (!userRecord?.orgId) {
       throw new ConvexError("User not associated with an organization");
     }
+    const orgId = userRecord.orgId;
 
     // Get the customer
     const customer = await ctx.db.get("customers", args.customerId);
@@ -95,7 +95,7 @@ export const getCustomer = query({
     }
 
     // Verify customer belongs to user's org
-    if (customer.orgId !== userRecord.orgId) {
+    if (customer.orgId !== orgId) {
       throw new ConvexError("Access denied");
     }
 
@@ -230,6 +230,7 @@ export const updateCustomer = mutation({
     if (!userRecord?.orgId) {
       throw new ConvexError("User not associated with an organization");
     }
+    const orgId = userRecord.orgId;
 
     // Get the customer
     const customer = await ctx.db.get("customers", args.customerId);
@@ -238,7 +239,7 @@ export const updateCustomer = mutation({
     }
 
     // Verify customer belongs to user's org
-    if (customer.orgId !== userRecord.orgId) {
+    if (customer.orgId !== orgId) {
       throw new ConvexError("Access denied");
     }
 
@@ -301,6 +302,7 @@ export const deleteCustomer = mutation({
     if (!userRecord?.orgId) {
       throw new ConvexError("User not associated with an organization");
     }
+    const orgId = userRecord.orgId;
 
     // Only admins can delete customers
     if (userRecord.role !== "admin") {
@@ -329,7 +331,7 @@ export const deleteCustomer = mutation({
 
     const pendingInvitations = await ctx.db
       .query("pendingInvitations")
-      .withIndex("by_org", (q) => q.eq("orgId", userRecord.orgId))
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
       .collect();
 
     const pendingClientInvitations = pendingInvitations.filter(

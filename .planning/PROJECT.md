@@ -98,17 +98,21 @@ Agencies can launch client portals with proper data isolation, billing enforceme
 Multi-tenant foundation with auth, org management, team invites, billing. Phases 1-3.
 
 ### v1 Ship Blockers (as of 2026-02-10)
-- Fix Lemon Squeezy plan mapping to use real variant IDs (`convex/lemonsqueezy/plans.ts`)
-- Enforce admin role on org settings updates (`convex/workos/updateOrg.ts`)
-- Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments)
-- Handle customer deletion with client users/invites (block or cascade cleanup)
-- Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
-- Clarify restore-user behavior (reinvite vs restore), adjust UI accordingly
-- Configure WorkOS webhook endpoint and `WORKOS_WEBHOOK_SECRET`
-- Configure Lemon Squeezy webhook endpoint and environment variables
-- Add CapReachedBanner to invite flow
-- Update docs to reflect billing is implemented and required Convex env vars
-- Run v1 smoke test checklist and update requirement statuses
+
+**Phase 2 (Team Management):** ✓ Complete — Signed off 2026-02-10
+
+**Phase 3 (Billing) & General:**
+- [ ] Fix Lemon Squeezy plan mapping to use real variant IDs (`convex/lemonsqueezy/plans.ts`)
+- [ ] Enforce admin role on org settings updates (`convex/workos/updateOrg.ts`)
+- [ ] Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments)
+- [ ] Handle customer deletion with client users/invites (block or cascade cleanup)
+- [ ] Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
+- [ ] Clarify restore-user behavior (reinvite vs restore), adjust UI accordingly
+- [ ] Configure WorkOS webhook endpoint and `WORKOS_WEBHOOK_SECRET`
+- [ ] Configure Lemon Squeezy webhook endpoint and environment variables
+- [ ] Add CapReachedBanner to invite flow
+- [ ] Update docs to reflect billing is implemented and required Convex env vars
+- [ ] Run v1 smoke test checklist and update requirement statuses
 
 ### v2.0: Admin Console (Planned)
 **Goal:** Platform-level admin dashboard — separate `/admin` route as an "app within the app" with its own sidebar and views. Enables the SaaS operator to manage all orgs, impersonate users, view platform metrics, and configure system settings.

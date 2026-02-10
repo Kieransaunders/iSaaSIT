@@ -1,0 +1,34 @@
+---
+title: Tools
+description: Environment checks and developer utilities for the starter kit
+---
+
+The Tools page provides quick environment checks and safe utilities to help developers validate setup during local development. It is intended for starter kit onboarding and is not a production observability dashboard.
+
+## Access
+
+- URL: `/tools`
+- Role: Admin only
+
+## What It Checks
+
+- Convex connection and deployment ID
+- WorkOS client ID, API key, and webhook secret
+- Lemon Squeezy configuration (optional)
+
+## Billing Configuration Warning
+
+If Lemon Squeezy is configured but plan mapping is missing, the Tools page shows a warning. This usually means the Convex environment is missing `LEMONSQUEEZY_PRO_VARIANT_ID` or `LEMONSQUEEZY_BUSINESS_VARIANT_ID`. When those are absent, paid subscriptions will default to free tier limits.
+
+:::tip
+For starter kit projects, it is fine to leave billing unconfigured. The app will run on the free tier by default.
+:::
+
+## Webhook Simulator
+
+The Tools page includes a simple WorkOS webhook simulator for `invitation.accepted`. It is useful for confirming the invite flow without waiting on real emails.
+
+## Related Setup
+
+- `SETUP.md` for local environment variables
+- `DEPLOYMENT.md` for production webhook configuration

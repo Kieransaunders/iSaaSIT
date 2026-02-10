@@ -1,8 +1,9 @@
 /**
  * Lemon Squeezy Plan Tier Configuration
  *
- * This file defines plan limits. Variant IDs are passed from the frontend
- * via environment variables (VITE_LEMONSQUEEZY_*_VARIANT_ID).
+ * This file defines plan limits. Variant IDs must be configured in the
+ * Convex environment as LEMONSQUEEZY_*_VARIANT_ID values so webhooks can
+ * map subscription variants to limits.
  *
  * The variant ID is stored on the org when a subscription is created,
  * and we look up plan limits based on that stored variant ID.
@@ -18,32 +19,45 @@ export const FREE_TIER_LIMITS = {
  * Plan tier definitions.
  * Keys should match the variant IDs you configure in your environment.
  */
-export const PLAN_TIERS: Record<
-  string,
-  {
-    name: string;
-    maxCustomers: number;
-    maxStaff: number;
-    maxClients: number;
-  }
-> = {
-  // Pro Plan - Small agencies
-  // Configure via VITE_LEMONSQUEEZY_PRO_VARIANT_ID in your .env.local
-  pro: {
-    name: "Pro",
-    maxCustomers: 25,
-    maxStaff: 10,
-    maxClients: 100,
-  },
+type PlanLimits = {
+  name: string;
+  maxCustomers: number;
+  maxStaff: number;
+  maxClients: number;
+};
 
-  // Business Plan - Growing agencies
-  // Configure via VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID in your .env.local
-  business: {
-    name: "Business",
-    maxCustomers: 100,
-    maxStaff: 50,
-    maxClients: 500,
-  },
+const proVariantId =
+  process.env.LEMONSQUEEZY_PRO_VARIANT_ID ||
+  process.env.VITE_LEMONSQUEEZY_PRO_VARIANT_ID;
+const businessVariantId =
+  process.env.LEMONSQUEEZY_BUSINESS_VARIANT_ID ||
+  process.env.VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID;
+
+/**
+ * Plan tier definitions keyed by Lemon Squeezy variant ID.
+ * Set these IDs in the Convex environment to enable paid limits.
+ */
+export const PLAN_TIERS: Record<string, PlanLimits> = {
+  ...(proVariantId
+    ? {
+        [proVariantId]: {
+          name: "Pro",
+          maxCustomers: 25,
+          maxStaff: 10,
+          maxClients: 100,
+        },
+      }
+    : {}),
+  ...(businessVariantId
+    ? {
+        [businessVariantId]: {
+          name: "Business",
+          maxCustomers: 100,
+          maxStaff: 50,
+          maxClients: 500,
+        },
+      }
+    : {}),
 };
 
 /**

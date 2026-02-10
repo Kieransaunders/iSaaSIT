@@ -197,14 +197,14 @@ export const getPendingInvitationByEmail = internalQuery({
   returns: v.union(v.null(), pendingInvitationSummary),
   handler: async (ctx, args) => {
     const normalizedEmail = args.email.trim().toLowerCase();
-    const invitations = await ctx.db
+    
+    // Use by_email_org index for efficient lookup
+    const invitation = await ctx.db
       .query("pendingInvitations")
-      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
-      .collect();
-
-    const invitation = invitations.find(
-      (pending) => pending.email.toLowerCase() === normalizedEmail
-    );
+      .withIndex("by_email_org", (q) => 
+        q.eq("email", normalizedEmail).eq("orgId", args.orgId)
+      )
+      .first();
 
     if (!invitation) {
       return null;

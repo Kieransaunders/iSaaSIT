@@ -28,7 +28,7 @@ export function CapReachedBanner({
   const resourceLabel = resourceType.charAt(0).toUpperCase() + resourceType.slice(1);
 
   return (
-    <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+    <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 w-full">
       <div className="p-4">
         <div className="flex gap-3 items-start">
           <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />

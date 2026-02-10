@@ -102,27 +102,14 @@ export async function processWorkOSWebhook(
   const invitationId = invitationData?.id;
   const organizationId = invitationData?.organization_id ?? invitationData?.organizationId;
   const acceptedUserId = invitationData?.accepted_user_id ?? invitationData?.acceptedUserId ?? invitationData?.user_id;
-  const firstName = invitationData?.first_name ?? invitationData?.firstName;
-  const lastName = invitationData?.last_name ?? invitationData?.lastName;
-  const email = invitationData?.email;
+  const firstNameRaw = invitationData?.first_name ?? invitationData?.firstName;
+  const lastNameRaw = invitationData?.last_name ?? invitationData?.lastName;
+  const firstName = typeof firstNameRaw === "string" ? firstNameRaw : undefined;
+  const lastName = typeof lastNameRaw === "string" ? lastNameRaw : undefined;
+  const eventEmail = typeof invitationData?.email === "string" ? invitationData.email : undefined;
 
-  if (!invitationId || !organizationId || !acceptedUserId || !email) {
+  if (!invitationId || !organizationId || !acceptedUserId) {
     return { ok: false, status: 400, message: "Invalid invitation payload", event: eventType };
-  }
-
-  // Look up the pending invitation to get role and customerId
-  const pendingInvitation = await ctx.runQuery(
-    internal.invitations.internal.getPendingInvitationByWorkosId,
-    { workosInvitationId: invitationId }
-  );
-
-  if (!pendingInvitation) {
-    return {
-      ok: true,
-      status: 200,
-      message: `Pending invitation not found for WorkOS ID: ${invitationId}`,
-      event: eventType,
-    };
   }
 
   // Look up the organization
@@ -140,27 +127,62 @@ export async function processWorkOSWebhook(
     };
   }
 
+  // Prefer exact WorkOS invitation ID match.
+  const pendingByWorkosId = await ctx.runQuery(
+    internal.invitations.internal.getPendingInvitationByWorkosId,
+    { workosInvitationId: invitationId }
+  );
+
+  let pendingInvitationId: Id<"pendingInvitations"> | undefined = pendingByWorkosId?._id;
+  let invitationRole: "staff" | "client" | undefined = pendingByWorkosId?.role;
+  let invitationCustomerId: Id<"customers"> | undefined = pendingByWorkosId?.customerId;
+  let invitationEmail: string | undefined = eventEmail ?? pendingByWorkosId?.email;
+
+  // Fallback for stale WorkOS invitation IDs: match pending invite by org + email.
+  if (!pendingInvitationId && eventEmail) {
+    const pendingByEmail = await ctx.runQuery(
+      internal.invitations.internal.getPendingInvitationDetailsByEmail,
+      { orgId: org._id, email: eventEmail }
+    );
+
+    if (pendingByEmail) {
+      pendingInvitationId = pendingByEmail._id;
+      invitationRole = pendingByEmail.role;
+      invitationCustomerId = pendingByEmail.customerId;
+      invitationEmail = eventEmail;
+    }
+  }
+
+  if (!pendingInvitationId || !invitationRole || !invitationEmail) {
+    return {
+      ok: false,
+      status: 409,
+      message: `Pending invitation not found for WorkOS ID: ${invitationId}`,
+      event: eventType,
+    };
+  }
+
   // Sync the user to Convex
   const userId = await ctx.runMutation(internal.users.sync.syncFromInvitation, {
     workosUserId: acceptedUserId,
-    email,
+    email: invitationEmail,
     firstName,
     lastName,
     orgId: org._id,
-    role: pendingInvitation.role,
-    customerId: pendingInvitation.customerId,
+    role: invitationRole,
+    customerId: invitationCustomerId,
   });
 
-  // Delete the pending invitation
+  // Delete the pending invitation (ID-based delete handles fallback matches too).
   await ctx.runMutation(
-    internal.users.sync.deletePendingInvitationByWorkosId,
-    { workosInvitationId: invitationId }
+    internal.invitations.internal.deletePendingInvitation,
+    { invitationId: pendingInvitationId }
   );
 
   return {
     ok: true,
     status: 200,
-    message: `Successfully synced user ${email}`,
+    message: `Successfully synced user ${invitationEmail}`,
     event: eventType,
     userId,
   };

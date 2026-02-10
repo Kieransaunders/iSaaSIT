@@ -7,8 +7,8 @@ Billing in iSaaSIT is handled at the Organization level with usage-based caps.
 
 ## Overview
 
-:::caution[Planned Feature]
-Billing integration with Lemon Squeezy is planned but not yet implemented.
+:::note[Optional]
+Billing integration is included, but it is optional. The starter kit works on the free tier without Lemon Squeezy configured.
 :::
 
 ## Billing Model
@@ -27,21 +27,17 @@ Each subscription plan defines caps for:
 | `maxStaff` | Maximum staff members |
 | `maxClients` | Maximum client users per customer |
 
-## Planned Implementation
+## Implementation Notes
 
-```typescript
-// Organization with subscription data
-organizations: defineTable({
-  // ... other fields
-  lemonSqueezySubscriptionId: v.optional(v.string()),
-  subscriptionStatus: v.string(), // 'active', 'past_due', 'cancelled'
-  planId: v.string(),
-  maxCustomers: v.number(),
-  maxStaff: v.number(),
-  maxClients: v.number(),
-  currentPeriodEnd: v.optional(v.number()),
-})
-```
+- Subscriptions sync via Lemon Squeezy webhooks.
+- Plan limits are enforced based on the variant ID stored on the org.
+- Org records store subscription status, plan ID, usage caps, and trial/end dates.
+
+## Configuration
+
+- Set `VITE_LEMONSQUEEZY_*` variables in `.env.local` for the checkout UI.
+- Set `LEMONSQUEEZY_*` variables in Convex for webhook processing and plan limits.
+- See `SETUP.md` for the full step-by-step configuration.
 
 ## Webhook Handling
 

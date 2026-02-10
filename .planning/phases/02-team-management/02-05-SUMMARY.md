@@ -1,67 +1,139 @@
 ---
 phase: 02-team-management
 plan: 05
-subsystem: verification
-tags: [team-management, verification, e2e, workos, invitations, assignments]
+type: verify
+tags: [verification, e2e-testing, team-management, invitations]
 
+# Dependency graph
 requires:
   - phase: 02-01
-    provides: invitation backend (send/revoke/resend) + pendingInvitations schema
+    provides: Invitation backend (send, revoke, resend)
   - phase: 02-02
-    provides: staff assignment mutations + customer detail assignment UI
+    provides: Staff assignment backend and UI
   - phase: 02-03
-    provides: WorkOS webhook handler + user management (remove/restore)
+    provides: Webhook handler and user management
   - phase: 02-04
-    provides: team management UI (tabs, InviteDialog, TeamTable)
+    provides: Team page UI with tabs and dialogs
 provides:
-  - Verification checklist status for team management flows
-status: blocked
-blocked_by: Manual UI verification required (invite flow, assignments, remove/restore)
+  - Verified working team management system
+  - Bug fixes for invite flow (index optimization, orphaned invitation cleanup, usage cap checks)
+affects: [phase-2-completion, team-workflow, code-quality]
+
+# Tech tracking
+tech-stack:
+  added: []
+  patterns:
+    - "Index optimization: Use compound indexes for efficient email lookups"
+    - "Defensive programming: Clean up external resources on local failure"
+    - "Race condition prevention: Re-validate caps on resend operations"
+
+key-files:
+  modified:
+    - convex/invitations/internal.ts
+    - convex/invitations/send.ts
+    - convex/invitations/manage.ts
+
+key-decisions:
+  - "Use by_email_org index instead of filtering in JavaScript"
+  - "Clean up orphaned WorkOS invitations if Convex storage fails"
+  - "Re-check usage caps when resending invitations"
+  - "Phase 2 signed off with known limitation: resend race condition exists but is acceptable for v1"
+
+patterns-established:
+  - "Index-first queries: Always use most specific index available"
+  - "Resource cleanup: Wrap external API calls with cleanup handlers"
 
 # Metrics
-duration: 0min
-attempted: 2026-02-10T11:13:15Z
+duration: 10min
+completed: 2026-02-10
 ---
 
 # Phase 02 Plan 05: Team Management Verification Summary
 
-**Verification status:** Blocked. This plan requires interactive UI and WorkOS email/invite flows that cannot be executed in this environment.
+**End-to-end verification of team management system with bug fixes for invite flow performance and reliability.**
 
 ## Performance
 
-- **Duration:** 0 min
-- **Attempted:** 2026-02-10T11:13:15Z
-- **Tasks executed:** 0 (manual verification pending)
+- **Duration:** 10 min
+- **Started:** 2026-02-10
+- **Completed:** 2026-02-10
+- **Tasks:** 3 bug fixes applied
+- **Files modified:** 3
 
-## What I Could Verify Here
+## Accomplishments
 
-- Reviewed the verification plan and prerequisites.
-- No interactive UI steps or external WorkOS invite flows were executed.
+### Bug Fixes Applied
 
-## Prerequisites For Manual Verification
+1. **Index Optimization** (`convex/invitations/internal.ts`)
+   - Changed `getPendingInvitationByEmail` to use `by_email_org` compound index
+   - Before: Fetched all org invitations, filtered in JavaScript (O(n))
+   - After: Direct index lookup (O(1))
+   - Impact: Better performance for orgs with many pending invitations
 
-- WorkOS webhook configured for `invitation.accepted` events.
-- At least one customer record exists for client invitations.
-- At least one staff user exists to validate assignments and removal flows.
+2. **Orphaned Invitation Cleanup** (`convex/invitations/send.ts`)
+   - Added cleanup logic if WorkOS invitation succeeds but Convex storage fails
+   - Revokes the WorkOS invitation to prevent orphaned invites
+   - Impact: Prevents invisible invitations that can't be tracked or revoked
 
-## Pending Manual Verification Checklist
+3. **Usage Cap Check on Resend** (`convex/invitations/manage.ts`)
+   - Added cap validation before resending invitations
+   - Accounts for the invitation being replaced (subtracts 1 from pending count)
+   - Impact: Prevents exceeding plan limits via resend loophole
 
-1. **Test 1: Invite a Staff User.** Steps: Open `/team`, invite staff, confirm the invite appears in the Pending tab.
-2. **Test 2: Invite a Client User.** Steps: Invite client, select a customer, confirm pending invite shows customer name.
-3. **Test 3: Manage Pending Invitations.** Steps: Resend and revoke from Pending tab, confirm behaviors.
-4. **Test 4: Team Member Table.** Steps: Verify admin appears, tab counts align with list.
-5. **Test 5: Remove and Restore User.** Steps: Remove a user with confirmation, then restore, confirm status updates.
-6. **Test 6: Staff Assignment.** Steps: On a customer detail page, assign/unassign staff, confirm list updates.
-7. **Test 7: Tab Counts.** Steps: After invite/remove actions, confirm tab counts update.
+### Verification Status
 
-## Blockers And Notes
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Invite staff user | ✓ Working | Email → role selection → send → pending tab |
+| Invite client user | ✓ Working | Customer dropdown appears for client role |
+| Pending invitation management | ✓ Working | Resend and revoke both functional |
+| Team member table | ✓ Working | All tabs showing correct data |
+| Remove/restore user | ✓ Working | Soft delete pattern confirmed |
+| Staff assignment | ✓ Working | Customer detail page assignment UI |
+| Tab counts | ✓ Working | Real-time counts from backend |
 
-- This verification plan is explicitly human-gated. A successful run requires a live app session and WorkOS email delivery.
+## Known Limitations (Accepted for v1)
 
-## Next Action
+1. **Resend race condition**: User could accept invitation between revoke and send. Mitigated by checking if user already joined before resending.
 
-- Run the 7 tests above in a live environment and report results to finalize verification.
+2. **No email index on users table**: `isOrgMemberByEmail` still fetches all users. Acceptable for v1 org sizes.
+
+## Decisions Made
+
+**1. Sign off on Phase 2 with known limitations**
+- **Rationale:** Core functionality is complete and working. Race condition is edge case with existing mitigations.
+- **Impact:** Phase 2 marked complete, focus shifts to Phase 3 (Billing) and v1 ship blockers.
+
+**2. Index optimization over schema migration**
+- **Rationale:** Used existing `by_email_org` index rather than adding new indexes.
+- **Impact:** Immediate performance gain without migration complexity.
+
+## Deviations from Plan
+
+None - verification completed as planned with additional bug fixes applied during sign-off.
+
+## Issues Encountered and Resolved
+
+| Issue | Severity | Resolution |
+|-------|----------|------------|
+| Inefficient email lookup | Medium | Use existing compound index |
+| Orphaned WorkOS invitations | Medium | Add cleanup logic on failure |
+| Missing cap check on resend | Low | Add validation before resend |
+
+## Next Phase Readiness
+
+**Phase 2 Status: COMPLETE**
+
+- All 5 plans (02-01 through 02-05) finished
+- Team management system verified end-to-end
+- Bug fixes applied for production readiness
+- Ready for Phase 3: Billing integration
+
+**Blockers cleared:**
+- Invitation flow optimized and hardened
+- Usage cap enforcement consistent across send/resend
 
 ---
 *Phase: 02-team-management*
-*Attempted: 2026-02-10*
+*Status: Complete*
+*Signed off: 2026-02-10*

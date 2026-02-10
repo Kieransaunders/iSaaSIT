@@ -1,4 +1,4 @@
-import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
+import { Outlet, createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { getAuth, getSignInUrl } from '@workos/authkit-tanstack-react-start';
 import { createServerFn } from '@tanstack/react-start';
 import { fetchMutation } from 'convex/nextjs';
@@ -38,6 +38,7 @@ export const Route = createFileRoute('/_authenticated')({
 
 function AuthenticatedLayout() {
   Route.useLoaderData();
+  const navigate = useNavigate();
   const syncCurrentUser = useAction(api.users.syncActions.syncCurrentUserFromWorkOS);
 
   // Get usage stats for warning banner (only if user has org)
@@ -52,6 +53,12 @@ function AuthenticatedLayout() {
       console.error('Failed to sync user from WorkOS:', error);
     });
   }, [syncCurrentUser]);
+
+  useEffect(() => {
+    if (hasOrgCheck && !hasOrgCheck.hasOrg) {
+      navigate({ to: '/onboarding', replace: true });
+    }
+  }, [hasOrgCheck, navigate]);
 
   return (
     <MainLayout breadcrumbs={[{ label: "Dashboard" }]}>

@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CapReachedBanner } from '@/components/billing/CapReachedBanner';
 
 interface InviteDialogProps {
   open: boolean;
@@ -38,6 +39,7 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
 
   const sendInvitation = useAction(api.invitations.send.sendInvitation);
   const customers = useQuery(api.customers.crud.listCustomers);
+  const usageStats = useQuery(api.billing.queries.getUsageStats);
 
   const resetForm = () => {
     setEmail('');
@@ -115,6 +117,14 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
     onOpenChange(false);
     resetForm();
   };
+
+  const staffUsage = usageStats?.usage.staff;
+  const clientUsage = usageStats?.usage.clients;
+  const isAtLimit = role === 'staff'
+    ? !!staffUsage && staffUsage.count >= staffUsage.max
+    : role === 'client'
+      ? !!clientUsage && clientUsage.count >= clientUsage.max
+      : false;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -202,6 +212,22 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
                 </Select>
               </div>
             )}
+
+            {role === 'staff' && staffUsage && (
+              <CapReachedBanner
+                resourceType="staff"
+                currentCount={staffUsage.count}
+                maxCount={staffUsage.max}
+              />
+            )}
+
+            {role === 'client' && clientUsage && (
+              <CapReachedBanner
+                resourceType="clients"
+                currentCount={clientUsage.count}
+                maxCount={clientUsage.max}
+              />
+            )}
           </div>
 
           <DialogFooter>
@@ -213,7 +239,7 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || isAtLimit}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Send Invite
             </Button>
