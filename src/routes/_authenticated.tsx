@@ -2,7 +2,8 @@ import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 import { getAuth, getSignInUrl } from '@workos/authkit-tanstack-react-start';
 import { createServerFn } from '@tanstack/react-start';
 import { fetchMutation } from 'convex/nextjs';
-import { useQuery } from 'convex/react';
+import { useAction, useQuery } from 'convex/react';
+import { useEffect } from 'react';
 import { api } from '../../convex/_generated/api';
 import { MainLayout } from '@/components/layout/main-layout';
 import { UsageWarningBanner } from '@/components/billing/CapReachedBanner';
@@ -36,10 +37,21 @@ export const Route = createFileRoute('/_authenticated')({
 });
 
 function AuthenticatedLayout() {
-  const { user } = Route.useLoaderData();
+  Route.useLoaderData();
+  const syncCurrentUser = useAction(api.users.syncActions.syncCurrentUserFromWorkOS);
 
   // Get usage stats for warning banner (only if user has org)
-  const usageStats = useQuery(api.billing.queries.getUsageStats);
+  const hasOrgCheck = useQuery(api.orgs.get.hasOrg);
+  const usageStats = useQuery(
+    api.billing.queries.getUsageStats,
+    hasOrgCheck?.hasOrg && hasOrgCheck.role === "admin" ? {} : "skip",
+  );
+
+  useEffect(() => {
+    syncCurrentUser().catch((error) => {
+      console.error('Failed to sync user from WorkOS:', error);
+    });
+  }, [syncCurrentUser]);
 
   return (
     <MainLayout breadcrumbs={[{ label: "Dashboard" }]}>

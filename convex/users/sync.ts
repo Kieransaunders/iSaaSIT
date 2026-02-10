@@ -33,6 +33,8 @@ export const syncFromInvitation = internalMutation({
         orgId: args.orgId,
         role: args.role,
         customerId: args.customerId,
+        // Re-activate previously removed users when they accept a new invite.
+        deletedAt: undefined,
         updatedAt: now,
       });
       return existing._id;
@@ -72,5 +74,69 @@ export const deletePendingInvitationByWorkosId = internalMutation({
     if (invitation) {
       await ctx.db.delete("pendingInvitations", invitation._id);
     }
+  },
+});
+
+/**
+ * Upsert user profile from WorkOS auth identity.
+ * Optionally attaches org/role/customer when provided.
+ */
+export const upsertFromAuth = internalMutation({
+  args: {
+    workosUserId: v.string(),
+    email: v.string(),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    orgId: v.optional(v.id("orgs")),
+    role: v.optional(v.union(v.literal("admin"), v.literal("staff"), v.literal("client"))),
+    customerId: v.optional(v.id("customers")),
+    reactivateIfDeleted: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", args.workosUserId))
+      .first();
+
+    const now = Date.now();
+
+    if (existing) {
+      const updates: Record<string, unknown> = {
+        email: args.email,
+        firstName: args.firstName,
+        lastName: args.lastName,
+        updatedAt: now,
+      };
+
+      if (args.orgId) {
+        updates.orgId = args.orgId;
+      }
+      if (args.role) {
+        updates.role = args.role;
+      }
+      if (args.customerId !== undefined) {
+        updates.customerId = args.customerId;
+      }
+      if (args.reactivateIfDeleted && existing.deletedAt) {
+        updates.deletedAt = undefined;
+      }
+
+      await ctx.db.patch("users", existing._id, updates);
+      return existing._id;
+    }
+
+    const userId = await ctx.db.insert("users", {
+      workosUserId: args.workosUserId,
+      email: args.email,
+      firstName: args.firstName,
+      lastName: args.lastName,
+      orgId: args.orgId,
+      role: args.role,
+      customerId: args.customerId,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return userId;
   },
 });

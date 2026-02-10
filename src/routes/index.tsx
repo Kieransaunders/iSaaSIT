@@ -1,11 +1,14 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-react-start';
+import { useAction } from 'convex/react';
 import { 
   ArrowRight, Building2, CheckCircle2, ChevronDown, Code2, Command, 
   CreditCard, Database, FileText, Github, HelpCircle, Layers, Lock, 
   Mail, MessageCircle, Server, Shield, Sparkles, Terminal,
   Twitter, Users, Zap
 } from 'lucide-react';
+import { useEffect } from 'react';
+import { api } from '../../convex/_generated/api';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
 import { BLOG_URL, DOCS_URL } from '@/lib/constants';
@@ -433,6 +436,14 @@ function CustomerList() {
 }
 
 function AuthenticatedHome() {
+  const syncCurrentUser = useAction(api.users.syncActions.syncCurrentUserFromWorkOS);
+
+  useEffect(() => {
+    syncCurrentUser().catch((error) => {
+      console.error('Failed to sync user from WorkOS:', error);
+    });
+  }, [syncCurrentUser]);
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

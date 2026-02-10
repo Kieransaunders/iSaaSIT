@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useQuery } from 'convex/react';
-import { Building2, CreditCard, Loader2, Plus, TrendingUp, Users } from 'lucide-react';
-import { useEffect } from 'react';
+import { useAction, useQuery } from 'convex/react';
+import { Building2, CreditCard, Loader2, Mail, TrendingUp, UserCircle, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { api } from '../../../convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,13 +17,40 @@ function DashboardPage() {
   const navigate = useNavigate();
   const org = useQuery(api.orgs.get.getMyOrg);
   const hasOrgCheck = useQuery(api.orgs.get.hasOrg);
+  const userRole = hasOrgCheck?.role;
+  const syncCurrentUser = useAction(api.users.syncActions.syncCurrentUserFromWorkOS);
+  const [syncAttempted, setSyncAttempted] = useState(false);
+  const [lastSyncResult, setLastSyncResult] = useState<{ hasOrg: boolean } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    syncCurrentUser()
+      .then((result) => {
+        if (!cancelled) {
+          setLastSyncResult(result);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to sync user from WorkOS:', error);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setSyncAttempted(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [syncCurrentUser]);
 
   // Redirect to onboarding if no org
   useEffect(() => {
-    if (hasOrgCheck && !hasOrgCheck.hasOrg) {
+    // Only redirect if sync finished AND the query says no org AND the sync action result says no org
+    if (syncAttempted && hasOrgCheck && !hasOrgCheck.hasOrg && lastSyncResult?.hasOrg === false) {
       navigate({ to: '/onboarding' });
     }
-  }, [hasOrgCheck, navigate]);
+  }, [hasOrgCheck, navigate, syncAttempted, lastSyncResult]);
 
   if (!org && hasOrgCheck?.hasOrg === false) {
     return (
@@ -32,6 +60,269 @@ function DashboardPage() {
     );
   }
 
+  // Show different dashboard based on role
+  if (userRole === 'client') {
+    return <ClientDashboard />;
+  }
+
+  if (userRole === 'staff') {
+    return <StaffDashboard org={org} />;
+  }
+
+  // Admin sees the org dashboard
+  return <AdminDashboard org={org} />;
+}
+
+// Dashboard for client users
+function ClientDashboard() {
+  const customer = useQuery(api.customers.clientQueries.getMyCustomer);
+  const assignedStaff = useQuery(api.customers.clientQueries.getMyAssignedStaff);
+  const org = useQuery(api.orgs.get.getMyOrg);
+
+  const isLoading = customer === undefined || assignedStaff === undefined;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {customer ? customer.name : <Skeleton className="h-9 w-48" />}
+          </h1>
+          <p className="text-muted-foreground">
+            Welcome back! Here's your company overview.
+          </p>
+        </div>
+      </div>
+
+      {/* Company Info Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Company Information</CardTitle>
+          <CardDescription>
+            Your company details and contact information
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : customer ? (
+            <div className="space-y-6">
+              <div className="flex items-start gap-3">
+                <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="font-medium">{customer.name}</p>
+                  <p className="text-sm text-muted-foreground">Company Name</p>
+                </div>
+              </div>
+
+              {customer.email && (
+                <div className="flex items-start gap-3">
+                  <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="font-medium">{customer.email}</p>
+                    <p className="text-sm text-muted-foreground">Contact Email</p>
+                  </div>
+                </div>
+              )}
+
+              {customer.notes && (
+                <div className="flex items-start gap-3">
+                  <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="font-medium whitespace-pre-wrap">{customer.notes}</p>
+                    <p className="text-sm text-muted-foreground">Notes</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-start gap-3 pt-4 border-t">
+                <UserCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="font-medium">
+                    Member since {format(customer.createdAt, 'MMMM yyyy')}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Account Created</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No company information available</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Assigned Staff Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Team</CardTitle>
+          <CardDescription>
+            {org?.name} staff members assigned to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : assignedStaff && assignedStaff.length > 0 ? (
+            <div className="space-y-3">
+              {assignedStaff.map((staff: any) => (
+                <div
+                  key={staff._id}
+                  className="flex items-center gap-4 p-4 rounded-lg border bg-card"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    <UserCircle className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">
+                      {staff.firstName && staff.lastName
+                        ? `${staff.firstName} ${staff.lastName}`
+                        : staff.email}
+                    </p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {staff.email}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {staff.role === 'admin' ? 'Admin' : 'Staff'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+              <div className="rounded-full bg-muted p-3 mb-3">
+                <Users className="h-6 w-6" />
+              </div>
+              <p>No staff members assigned yet</p>
+              <p className="text-sm">Your account manager will be assigned soon</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+          <CardDescription>
+            Latest updates for your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+            <div className="rounded-full bg-muted p-3 mb-3">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            <p>No recent activity</p>
+            <p className="text-sm">Activity will appear here as it happens</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Dashboard for staff users
+function StaffDashboard({ org }: { org: any }) {
+  const customers = useQuery(api.customers.crud.listCustomers);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {org ? org.name : <Skeleton className="h-9 w-48" />}
+          </h1>
+          <p className="text-muted-foreground">
+            Welcome back! Here&apos;s your client workspace.
+          </p>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <StatCard
+          title="Assigned Customers"
+          value={customers ? String(customers.length) : <Skeleton className="h-8 w-12" />}
+          description="Clients you can access"
+          icon={Building2}
+          trend="Manage relationships"
+        />
+        <StatCard
+          title="Active Projects"
+          value="0"
+          description="In progress"
+          icon={TrendingUp}
+          trend="No active projects"
+        />
+        <StatCard
+          title="Tasks"
+          value="0"
+          description="Coming soon"
+          icon={UserCircle}
+          trend="Todo list planned"
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
+        {/* Recent Activity */}
+        <Card className="md:col-span-1 lg:col-span-4">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>
+              Latest updates from your clients
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+              <div className="rounded-full bg-muted p-3 mb-3">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <p>No activity yet</p>
+              <p className="text-sm">Updates will appear here as they happen</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card className="md:col-span-1 lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>
+              Common tasks for client work
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <QuickActionButton
+              label="View Customers"
+              description="Browse your assigned clients"
+              href="/customers"
+              icon={Building2}
+            />
+            <QuickActionButton
+              label="Add Customer"
+              description="Create a new client record"
+              href="/customers"
+              icon={Building2}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// Dashboard for admin users
+function AdminDashboard({ org }: { org: any }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -51,7 +342,7 @@ function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Customers"
           value={org ? "0" : <Skeleton className="h-8 w-12" />}
@@ -83,9 +374,9 @@ function DashboardPage() {
       </div>
 
       {/* Main Content */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
         {/* Recent Activity */}
-        <Card className="col-span-4">
+        <Card className="md:col-span-1 lg:col-span-4">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
@@ -104,7 +395,7 @@ function DashboardPage() {
         </Card>
 
         {/* Quick Actions */}
-        <Card className="col-span-3">
+        <Card className="md:col-span-1 lg:col-span-3">
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>
@@ -144,7 +435,7 @@ function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
               <UsageBar label="Customers" used={0} max={org.maxCustomers} />
               <UsageBar label="Team Members" used={1} max={org.maxStaff} />
               <UsageBar label="External Users" used={0} max={org.maxClients} />
