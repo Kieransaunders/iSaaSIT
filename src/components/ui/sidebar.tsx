@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
-import {  cva } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
-import type {VariantProps} from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -315,17 +315,23 @@ SidebarRail.displayName = "SidebarRail";
 const SidebarInset = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"main">
->(({ className, ...props }, ref) => {
+>(({ className, style, ...props }, ref) => {
+  const { state, isMobile } = useSidebar();
+
   return (
     <main
       ref={ref}
+      style={{
+        // Use a calc to add a safety gap (e.g., 2rem) to ensure content is never covered
+        marginLeft: isMobile ? "0" : (state === "expanded" ? "calc(var(--sidebar-width) + 1rem)" : "calc(var(--sidebar-width-icon) + 1.5rem)"),
+        ...style
+      }}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background",
-        // When sidebar is expanded: add margin to make room for sidebar
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[state=expanded]:peer-data-[variant=inset]:ml-[calc(var(--sidebar-width)+theme(spacing.2))]",
-        // When sidebar is collapsed: smaller margin for icon-only width
-        "md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-[calc(var(--sidebar-width-icon)+theme(spacing.6))]",
-        // Visual styling
+        "relative flex min-h-svh flex-1 flex-col bg-background transition-[margin,padding] duration-200 ease-linear",
+        // Additional padding to ensure breathing room
+        "p-4 md:p-8",
+        // Visual styling for inset variant
+        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))]",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
       )}
@@ -617,7 +623,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className
       )}
       {...props}
