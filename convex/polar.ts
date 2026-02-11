@@ -21,9 +21,18 @@ export const polar = new Polar(components.polar, {
       throw new ConvexError('Not authenticated');
     }
 
-    const user = await ctx.runQuery(internal.invitations.internal.getUserRecord, {
-      workosUserId: identity.subject,
-    });
+    let user = null;
+
+    if (ctx.db) {
+      user = await ctx.db
+        .query('users')
+        .withIndex('by_workos_user_id', (q: any) => q.eq('workosUserId', identity.subject))
+        .first();
+    } else if (ctx.runQuery) {
+      user = await ctx.runQuery(internal.invitations.internal.getUserRecord, {
+        workosUserId: identity.subject,
+      });
+    }
 
     if (!user) {
       throw new ConvexError('User record not found');
