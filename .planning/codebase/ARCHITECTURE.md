@@ -3,6 +3,7 @@
 ## Overview
 
 iSaaSIT is a full-stack SaaS starter kit built on a modern architecture stack:
+
 - **Frontend**: TanStack Start (full-stack React with SSR), TanStack Router, TanStack Query
 - **Backend**: Convex (serverless, real-time database)
 - **Auth**: WorkOS AuthKit (JWT-based authentication)
@@ -22,7 +23,7 @@ Routes are defined by file location in `src/routes/`:
 ```
 src/routes/
 ├── __root.tsx              # Root layout (applies to all routes)
-├── index.tsx               # Landing page (/)  
+├── index.tsx               # Landing page (/)
 ├── callback.tsx            # OAuth callback handler
 ├── onboarding.tsx          # New user onboarding flow
 └── _authenticated/         # Protected routes (layout prefix)
@@ -55,6 +56,7 @@ const customers = useQuery(api.customers.list);
 ```
 
 **Function Types**:
+
 - `query` - Read-only, cached, reactive
 - `mutation` - Write operations, transactional
 - `action` - Side effects, HTTP calls, non-transactional
@@ -64,19 +66,20 @@ const customers = useQuery(api.customers.list);
 
 Three-tier role system with data visibility rules:
 
-| Role | Data Visibility |
-|------|-----------------|
-| **Admin** | All org data, billing, invites |
-| **Staff** | Only assigned customers |
-| **Client** | Only own customer data |
+| Role       | Data Visibility                |
+| ---------- | ------------------------------ |
+| **Admin**  | All org data, billing, invites |
+| **Staff**  | Only assigned customers        |
+| **Client** | Only own customer data         |
 
 **Enforcement**: Row-level security via Convex query filters based on user's role and assignments.
 
 ### 5. Webhook-Driven External Sync
 
 External services communicate via webhooks:
+
 - **WorkOS** → `convex/webhooks/workos.ts` (user/org events)
-- **Lemon Squeezy** → `convex/lemonsqueezy/webhook.ts` (billing events)
+- **Polar** → `convex/http.ts` (billing events via `polar.registerRoutes`)
 
 ---
 
@@ -87,12 +90,14 @@ External services communicate via webhooks:
 **Location**: `src/routes/`, `src/components/`
 
 **Responsibilities**:
+
 - Route components and layouts
 - UI components (shadcn/ui-based)
 - Client-side state (minimal - prefer server state)
 - Form handling and validation
 
 **Key Files**:
+
 - `src/routes/__root.tsx` - Root provider setup (AuthKit, Convex, Theme)
 - `src/routes/_authenticated.tsx` - Auth guard and main layout wrapper
 - `src/components/layout/main-layout.tsx` - App shell with sidebar
@@ -103,11 +108,13 @@ External services communicate via webhooks:
 **Location**: `src/router.tsx`, `src/hooks/`, `src/lib/`
 
 **Responsibilities**:
+
 - Router configuration with Convex + Query integration
 - Auth integration hooks
 - Utility functions
 
 **Key Files**:
+
 - `src/router.tsx` - Router factory with Convex QueryClient setup
 - `src/lib/utils.ts` - Tailwind class merging (`cn()` function)
 - `src/lib/constants.ts` - App-wide constants
@@ -117,6 +124,7 @@ External services communicate via webhooks:
 **Location**: `convex/`
 
 **Responsibilities**:
+
 - Database schema definition
 - Query/mutation/action functions
 - Authentication/authorization
@@ -124,6 +132,7 @@ External services communicate via webhooks:
 - External API integrations
 
 **Organization**:
+
 ```
 convex/
 ├── schema.ts              # Database tables and indexes
@@ -135,7 +144,7 @@ convex/
 ├── billing/               # Usage tracking, billing queries
 ├── customers/             # Customer CRUD operations
 ├── invitations/           # User invitation flow
-├── lemonsqueezy/          # Payment provider integration
+├── polar.ts               # Payment provider integration
 ├── orgs/                  # Organization management
 ├── users/                 # User sync and management
 ├── webhooks/              # Webhook handlers
@@ -145,6 +154,7 @@ convex/
 ### Layer 4: Data Layer (Convex Database)
 
 **Schema Tables**:
+
 - `orgs` - Agencies with subscription data
 - `customers` - Client companies (belong to orgs)
 - `users` - Extended user profiles with roles
@@ -178,6 +188,7 @@ convex/
 ```
 
 **Code Path**:
+
 1. `src/start.ts` - WorkOS middleware attaches auth to requests
 2. `src/routes/__root.tsx` - `fetchWorkosAuth` server function gets auth state
 3. `src/routes/__root.tsx` - `ConvexProviderWithAuth` passes token to Convex
@@ -204,6 +215,7 @@ User ──▶ /dashboard ──▶ _authenticated.tsx loader ──▶ getAuth(
 ```
 
 **Code Path**:
+
 - `src/routes/_authenticated.tsx` - Loader checks auth, redirects if needed
 - `src/routes/onboarding.tsx` - Org creation flow for new users
 
@@ -248,6 +260,7 @@ Component ──▶ useQuery(api.module.function) ──▶ ConvexQueryClient
 ### Webhook Data Flow
 
 **WorkOS Webhook (User invited)**:
+
 ```
 WorkOS ──POST──▶ /webhooks/workos ──▶ convex/http.ts ──▶ handleWorkOSWebhook()
                                                              │
@@ -278,8 +291,8 @@ Defined in `src/routes/__root.tsx`:
 
 ```typescript
 interface RouterContext {
-  queryClient: QueryClient;           // TanStack Query client
-  convexClient: ConvexReactClient;    // Convex client instance
+  queryClient: QueryClient; // TanStack Query client
+  convexClient: ConvexReactClient; // Convex client instance
   convexQueryClient: ConvexQueryClient; // Bridge between Query and Convex
 }
 ```
@@ -307,19 +320,19 @@ All Convex functions receive a context object:
 ```typescript
 // Queries/Mutations
 async (ctx, args) => {
-  ctx.auth.getUserIdentity();  // Get authenticated user
-  ctx.db.query("table");       // Database queries
-  ctx.db.get(id);              // Get by ID
-  ctx.db.insert("table", doc); // Insert document
-  ctx.db.patch("table", id, { field: value }); // Partial update
-}
+  ctx.auth.getUserIdentity(); // Get authenticated user
+  ctx.db.query('table'); // Database queries
+  ctx.db.get(id); // Get by ID
+  ctx.db.insert('table', doc); // Insert document
+  ctx.db.patch('table', id, { field: value }); // Partial update
+};
 
 // Actions
 async (ctx, args) => {
-  ctx.runQuery(api.other.query, args);      // Call query
+  ctx.runQuery(api.other.query, args); // Call query
   ctx.runMutation(api.other.mutation, args); // Call mutation
-  ctx.fetch("https://api.example.com");     // HTTP requests
-}
+  ctx.fetch('https://api.example.com'); // HTTP requests
+};
 ```
 
 ### Database Schema Types
@@ -366,12 +379,12 @@ Key table shapes from `convex/schema.ts`:
 
 ### Application Entry Points
 
-| Entry Point | Purpose |
-|-------------|---------|
-| `src/start.ts` | TanStack Start server configuration |
-| `src/router.tsx` | Router factory (called by framework) |
-| `src/routes/__root.tsx` | Root React component with providers |
-| `src/app.css` | Global styles, Tailwind imports |
+| Entry Point             | Purpose                              |
+| ----------------------- | ------------------------------------ |
+| `src/start.ts`          | TanStack Start server configuration  |
+| `src/router.tsx`        | Router factory (called by framework) |
+| `src/routes/__root.tsx` | Root React component with providers  |
+| `src/app.css`           | Global styles, Tailwind imports      |
 
 ### Development Entry Points
 
@@ -382,7 +395,7 @@ npm run dev
 # Frontend only
 npm run dev:frontend  # Vite dev server on port 3000
 
-# Backend only  
+# Backend only
 npm run dev:backend   # Convex dev server
 
 # Docs site
@@ -401,12 +414,12 @@ npm run build:combined
 
 ### Key Convex Entry Points
 
-| File | Purpose |
-|------|---------|
-| `convex/schema.ts` | Database schema definition |
-| `convex/http.ts` | HTTP routes (webhooks) |
-| `convex/auth.config.ts` | JWT validation for auth |
-| `convex/_generated/api.d.ts` | Auto-generated API types |
+| File                         | Purpose                    |
+| ---------------------------- | -------------------------- |
+| `convex/schema.ts`           | Database schema definition |
+| `convex/http.ts`             | HTTP routes (webhooks)     |
+| `convex/auth.config.ts`      | JWT validation for auth    |
+| `convex/_generated/api.d.ts` | Auto-generated API types   |
 
 ---
 

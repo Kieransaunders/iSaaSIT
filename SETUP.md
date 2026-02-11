@@ -68,6 +68,7 @@ npx convex dev
 ```
 
 This will:
+
 - Sign you into Convex (opens browser)
 - Create a new Convex project
 - Add `VITE_CONVEX_URL` to your `.env.local`
@@ -102,6 +103,7 @@ Replace the values with your WorkOS API key and webhook secret.
 ### 4. Verify Convex is Running
 
 You should see:
+
 ```
 VITE_CONVEX_URL=https://your-deployment.convex.cloud
 ```
@@ -149,6 +151,7 @@ npm run dev
 ```
 
 This starts:
+
 - Vite dev server at http://localhost:3000
 - Convex backend (already running from `npx convex dev`)
 
@@ -182,65 +185,58 @@ You'll be redirected to your new dashboard! 🎉
 
 To enable paid plans, follow these additional steps:
 
-### 1. Create Lemon Squeezy Account
+### 1. Create Polar Account
 
-1. Sign up at [app.lemonsqueezy.com](https://app.lemonsqueezy.com)
-2. Complete store setup
-3. Get your store slug (from Settings → Store)
+1. Sign up at [polar.sh](https://polar.sh)
+2. Create an organization
+3. Generate an organization token with billing permissions
 
 ### 2. Create Products
 
 1. Go to **Products** → **Create Product**
-2. Create "Pro Plan":
-   - Name: "Pro"
-   - Price: $29/month
-   - Create a variant
-3. Create "Business Plan":
-   - Name: "Business"  
-   - Price: $99/month
-   - Create a variant
+2. Create "Pro" plans (monthly and yearly)
+3. Create "Business" plans (monthly and yearly)
 
-### 3. Get Variant IDs
+### 3. Get Product IDs
 
-For each variant:
-1. Click on the variant in Lemon Squeezy
-2. Look at the URL: `https://app.lemonsqueezy.com/products/12345/variants/67890`
-3. The variant ID is the last number (e.g., `67890`)
+For each product:
 
-### 4. Add to Environment
+1. Open the product in Polar
+2. Copy the Product ID (starts with `product_`)
+
+### 4. Add Environment Hints
 
 ```bash
-# .env.local
-VITE_LEMONSQUEEZY_STORE_SLUG=your-store-slug
-VITE_LEMONSQUEEZY_PRO_VARIANT_ID=12345
-VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID=67890
+# .env.local (optional UI hint)
+VITE_POLAR_SERVER=sandbox
 ```
 
 ### 5. Configure Webhooks
 
-1. In Lemon Squeezy, go to **Settings** → **Webhooks**
+1. In Polar, go to **Settings** → **Webhooks**
 2. Add webhook endpoint:
-   - URL: `https://your-convex-deployment.convex.site/lemonsqueezy/webhook`
-   - Events: Select all subscription events
+   - URL: `https://your-convex-deployment.convex.site/polar/events`
+   - Events: product.created, product.updated, subscription.created, subscription.updated
 3. Copy the webhook signing secret
 
 ### 6. Add Convex Environment Variables
 
 ```bash
-npx convex env set LEMONSQUEEZY_API_KEY your_api_key
-npx convex env set LEMONSQUEEZY_WEBHOOK_SECRET your_webhook_secret
-npx convex env set LEMONSQUEEZY_PRO_VARIANT_ID your_pro_variant_id
-npx convex env set LEMONSQUEEZY_BUSINESS_VARIANT_ID your_business_variant_id
+npx convex env set POLAR_ORGANIZATION_TOKEN your_organization_token
+npx convex env set POLAR_WEBHOOK_SECRET your_webhook_secret
+npx convex env set POLAR_SERVER sandbox
+npx convex env set POLAR_PRO_MONTHLY_PRODUCT_ID your_pro_monthly_product_id
+npx convex env set POLAR_PRO_YEARLY_PRODUCT_ID your_pro_yearly_product_id
+npx convex env set POLAR_BUSINESS_MONTHLY_PRODUCT_ID your_business_monthly_product_id
+npx convex env set POLAR_BUSINESS_YEARLY_PRODUCT_ID your_business_yearly_product_id
 ```
-
-These variant IDs should match the `VITE_LEMONSQUEEZY_*_VARIANT_ID` values in your `.env.local`.
 
 ### 7. Test Billing
 
 1. Go to **Billing** in your app
 2. You should see plan options
 3. Click "Upgrade" to test checkout flow
-4. Use Lemon Squeezy test card: `4242 4242 4242 4242`
+4. Use Polar sandbox test card details from the Polar docs
 
 ---
 
@@ -249,44 +245,52 @@ These variant IDs should match the `VITE_LEMONSQUEEZY_*_VARIANT_ID` values in yo
 ### Authentication Issues
 
 **"Authentication failed" error:**
+
 - Check `WORKOS_CLIENT_ID` matches in both `.env.local` and Convex
 - Verify redirect URI in WorkOS dashboard matches exactly
 - Check browser console for specific error messages
 
 **"User not associated with organization":**
+
 - This is normal for new users
 - Complete the onboarding flow to create an org
 
 ### Convex Issues
 
 **"Missing VITE_CONVEX_URL":**
+
 - Run `npx convex dev` again
 - Check that `.env.local` was created
 
 **"Convex function not found":**
+
 - Ensure Convex is running: `npx convex dev`
 - Check that functions are deployed: `npx convex dev` should show "Deploying..."
 
 ### Billing Issues
 
 **"Billing is not configured" warning:**
-- This is expected if you haven't set up Lemon Squeezy
+
+- This is expected if you haven't set up Polar
 - The app works fully without billing (free tier)
 
 **"Unable to start checkout":**
-- Check `VITE_LEMONSQUEEZY_STORE_SLUG` is set
-- Verify variant IDs are correct
+
+- Verify Polar product IDs are set in Convex
+- Check the billing page for missing product warnings
 - Check browser console for errors
 
 ### General Issues
 
 **Port 3000 already in use:**
+
 ```bash
 # Kill process on port 3000
 lsof -ti:3000 | xargs kill -9
 ```
 
 **Node version issues:**
+
 ```bash
 # Check Node version
 node --version  # Should be 22+

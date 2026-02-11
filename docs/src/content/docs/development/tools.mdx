@@ -14,11 +14,11 @@ The Tools page provides quick environment checks and safe utilities to help deve
 
 - Convex connection and deployment ID
 - WorkOS client ID, API key, and webhook secret
-- Lemon Squeezy configuration (optional)
+- Polar configuration (optional)
 
 ## Billing Configuration Warning
 
-If Lemon Squeezy is configured but plan mapping is missing, the Tools page shows a warning. This usually means the Convex environment is missing `LEMONSQUEEZY_PRO_VARIANT_ID` or `LEMONSQUEEZY_BUSINESS_VARIANT_ID`. When those are absent, paid subscriptions will default to free tier limits.
+If Polar is configured but product IDs are missing, the Tools page shows a warning. This usually means the Convex environment is missing `POLAR_PRO_MONTHLY_PRODUCT_ID`, `POLAR_PRO_YEARLY_PRODUCT_ID`, `POLAR_BUSINESS_MONTHLY_PRODUCT_ID`, or `POLAR_BUSINESS_YEARLY_PRODUCT_ID`. When those are absent, paid subscriptions will default to free tier limits.
 
 :::tip
 For starter kit projects, it is fine to leave billing unconfigured. The app will run on the free tier by default.

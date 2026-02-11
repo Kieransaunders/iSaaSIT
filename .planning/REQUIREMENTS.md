@@ -53,26 +53,26 @@ Note: TEAM-04 requires the WorkOS `invitation.accepted` webhook to be configured
 
 ### Billing (In Progress — needs config & verification)
 
-- [ ] **BILL-01**: Org has subscription status synced from Lemon Squeezy
-- [ ] **BILL-02**: Admin can upgrade via Lemon Squeezy checkout
+- [ ] **BILL-01**: Org has subscription status synced from Polar
+- [ ] **BILL-02**: Admin can upgrade via Polar checkout
 - [ ] **BILL-03**: Webhook handler processes subscription events
 - [ ] **BILL-04**: Plan caps update on subscription change
 - [ ] **BILL-05**: Usage cap enforced on staff/client creation
 - [ ] **BILL-06**: Billing page shows real usage from Convex
 
-Note: Billing backend/UI exist but require Lemon Squeezy webhook config and variant ID plan mapping to verify end-to-end.
+Note: Billing backend/UI exist but require Polar webhook config and product ID mapping to verify end-to-end.
 
 ### Release Readiness (v1 Ship Blockers)
 
-- [x] Fix Lemon Squeezy plan mapping to use real variant IDs in `convex/lemonsqueezy/plans.ts`
+- [x] Configure Polar product IDs in `convex/polar.ts`
 - [ ] Enforce admin role on org settings updates (`convex/workos/updateOrg.ts`)
 - [ ] Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments)
 - [ ] Handle customer deletion with client users/invites (block or cascade cleanup)
 - [x] Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
 - [ ] Clarify restore-user behavior (reinvite vs restore), adjust UI accordingly
 - [ ] Configure WorkOS webhook endpoint and `WORKOS_WEBHOOK_SECRET`
-- [ ] Configure Lemon Squeezy webhook endpoint and environment variables
-- [ ] Verify Lemon Squeezy checkout + webhook end-to-end (test mode)
+- [ ] Configure Polar webhook endpoint and environment variables
+- [ ] Verify Polar checkout + webhook end-to-end (test mode)
 - [x] Add CapReachedBanner to invite flow
 - [x] Update docs to reflect billing is implemented and required Convex env vars
 - [ ] Run v1 smoke test checklist and update requirement statuses
@@ -80,74 +80,79 @@ Note: Billing backend/UI exist but require Lemon Squeezy webhook config and vari
 ## v2 Requirements
 
 ### Notifications
+
 - **NOTIF-01**: Email on new team invite
 - **NOTIF-02**: Email on approaching usage limit
 - **NOTIF-03**: In-app notification center
 
 ### Enhanced Billing
+
 - **BILL-07**: Admin can cancel subscription
 - **BILL-08**: Admin can change plans
 - **BILL-09**: Usage history/analytics
 
 ### Client Portal
+
 - **PORTAL-01**: Client-specific dashboard
 - **PORTAL-02**: Client can update own profile
 - **PORTAL-03**: Limited navigation for clients
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Custom roles | Hardcoded Admin/Staff/Client sufficient for v1 |
-| Multiple orgs per user | Simplifies data model, revisit in v2 |
-| Per-customer billing | Org-level billing only |
-| Audit logs | Nice-to-have, defer to v2 |
-| File uploads | Storage costs, add as extension |
-| AI features | Not core value |
-| Mobile app | Web responsive is sufficient |
+| Feature                | Reason                                         |
+| ---------------------- | ---------------------------------------------- |
+| Custom roles           | Hardcoded Admin/Staff/Client sufficient for v1 |
+| Multiple orgs per user | Simplifies data model, revisit in v2           |
+| Per-customer billing   | Org-level billing only                         |
+| Audit logs             | Nice-to-have, defer to v2                      |
+| File uploads           | Storage costs, add as extension                |
+| AI features            | Not core value                                 |
+| Mobile app             | Web responsive is sufficient                   |
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| AUTH-01 | - | Complete |
-| AUTH-02 | - | Complete |
-| AUTH-03 | - | Complete |
-| ORG-01 | - | Complete |
-| ORG-02 | - | Complete |
-| ORG-03 | 1 | Complete |
-| ORG-04 | 1 | Complete |
-| CUST-01 | - | Complete |
-| CUST-02 | - | Complete |
-| CUST-03 | - | Complete |
-| CUST-04 | - | Complete |
-| CUST-05 | - | Complete |
-| SCOPE-01 | - | Complete |
-| SCOPE-02 | - | Complete |
-| SCOPE-03 | - | Complete |
-| SCOPE-04 | - | Complete |
-| TEAM-01 | 2 | Complete |
-| TEAM-02 | 2 | Complete |
-| TEAM-03 | 2 | Complete |
-| TEAM-04 | 2 | Complete |
-| TEAM-05 | 2 | Complete |
-| TEAM-06 | 2 | Complete |
-| ASSIGN-01 | - | Complete |
-| ASSIGN-02 | 2 | Complete |
-| ASSIGN-03 | 2 | Complete |
-| ASSIGN-04 | 2 | Complete |
-| BILL-01 | 3 | Pending |
-| BILL-02 | 3 | Pending |
-| BILL-03 | 3 | Pending |
-| BILL-04 | 3 | Pending |
-| BILL-05 | 3 | Pending |
-| BILL-06 | 3 | Pending |
+| Requirement | Phase | Status   |
+| ----------- | ----- | -------- |
+| AUTH-01     | -     | Complete |
+| AUTH-02     | -     | Complete |
+| AUTH-03     | -     | Complete |
+| ORG-01      | -     | Complete |
+| ORG-02      | -     | Complete |
+| ORG-03      | 1     | Complete |
+| ORG-04      | 1     | Complete |
+| CUST-01     | -     | Complete |
+| CUST-02     | -     | Complete |
+| CUST-03     | -     | Complete |
+| CUST-04     | -     | Complete |
+| CUST-05     | -     | Complete |
+| SCOPE-01    | -     | Complete |
+| SCOPE-02    | -     | Complete |
+| SCOPE-03    | -     | Complete |
+| SCOPE-04    | -     | Complete |
+| TEAM-01     | 2     | Complete |
+| TEAM-02     | 2     | Complete |
+| TEAM-03     | 2     | Complete |
+| TEAM-04     | 2     | Complete |
+| TEAM-05     | 2     | Complete |
+| TEAM-06     | 2     | Complete |
+| ASSIGN-01   | -     | Complete |
+| ASSIGN-02   | 2     | Complete |
+| ASSIGN-03   | 2     | Complete |
+| ASSIGN-04   | 2     | Complete |
+| BILL-01     | 3     | Pending  |
+| BILL-02     | 3     | Pending  |
+| BILL-03     | 3     | Pending  |
+| BILL-04     | 3     | Pending  |
+| BILL-05     | 3     | Pending  |
+| BILL-06     | 3     | Pending  |
 
 **Coverage:**
+
 - v1 requirements: 32 total
 - Complete: 26 (81%)
 - Pending: 6 (19%)
 
 ---
-*Requirements defined: 2025-02-04*
-*Last updated: 2026-02-10 after ship-readiness review*
+
+_Requirements defined: 2025-02-04_
+_Last updated: 2026-02-10 after ship-readiness review_

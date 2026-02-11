@@ -1,7 +1,7 @@
 # Codebase Concerns & Technical Debt
 
 > **Document Purpose:** Track technical debt, known issues, security concerns, and areas needing attention.
-> 
+>
 > **Last Updated:** 2026-02-10
 
 ---
@@ -24,33 +24,31 @@
 
 ### 1. Billing Integration Incomplete (BLOCKING)
 
-**Location:** `src/routes/_authenticated/billing.tsx`, `convex/lemonsqueezy/plans.ts`
+**Location:** `src/routes/_authenticated/billing.tsx`, `convex/polar.ts`
 
-**Issue:** Lemon Squeezy billing is not fully configured with actual product variant IDs.
+**Issue:** Polar billing is not fully configured with actual product IDs.
 
-```typescript
-// src/routes/_authenticated/billing.tsx:62
-variantId: 'VARIANT_PRO', // TODO: Replace with actual variant ID
-
-// src/routes/_authenticated/billing.tsx:76
-variantId: 'VARIANT_BUSINESS', // TODO: Replace with actual variant ID
-
-// convex/lemonsqueezy/plans.ts:21
-// TODO: Update variant IDs after creating products in Lemon Squeezy dashboard
+```bash
+# Convex environment variables
+POLAR_PRO_MONTHLY_PRODUCT_ID=product_xxx
+POLAR_PRO_YEARLY_PRODUCT_ID=product_yyy
+POLAR_BUSINESS_MONTHLY_PRODUCT_ID=product_zzz
+POLAR_BUSINESS_YEARLY_PRODUCT_ID=product_aaa
 ```
 
 **Impact:** Users cannot actually upgrade to paid plans. The checkout flow will fail.
 
 **Required Action:**
-1. Create products/variants in Lemon Squeezy dashboard
-2. Replace `VARIANT_PRO` and `VARIANT_BUSINESS` with actual variant IDs
-3. Configure `VITE_LEMONSQUEEZY_STORE_SLUG` environment variable
+
+1. Create products in the Polar dashboard
+2. Set the product IDs in the Convex environment
+3. Configure `VITE_POLAR_SERVER` for optional UI hints
 
 ---
 
 ### 2. Webhook Secret Configuration Missing
 
-**Location:** `convex/webhooks/workos.ts:71`, `convex/lemonsqueezy/webhook.ts:37`
+**Location:** `convex/webhooks/workos.ts:71`, `convex/http.ts`
 
 **Issue:** Webhook handlers check for secrets at runtime but don't fail gracefully during development.
 
@@ -58,8 +56,8 @@ variantId: 'VARIANT_BUSINESS', // TODO: Replace with actual variant ID
 // convex/webhooks/workos.ts:71-75
 const webhookSecret = process.env.WORKOS_WEBHOOK_SECRET;
 if (!webhookSecret) {
-  console.error("WORKOS_WEBHOOK_SECRET not configured");
-  return new Response("Webhook secret not configured", { status: 500 });
+  console.error('WORKOS_WEBHOOK_SECRET not configured');
+  return new Response('Webhook secret not configured', { status: 500 });
 }
 ```
 
@@ -69,11 +67,9 @@ if (!webhookSecret) {
 
 ## TODO/FIXME Comments Found
 
-| Location | Line | Comment |
-|----------|------|---------|
-| `convex/lemonsqueezy/plans.ts` | 21 | `TODO: Update variant IDs after creating products in Lemon Squeezy dashboard` |
-| `src/routes/_authenticated/billing.tsx` | 62 | `TODO: Replace with actual variant ID` |
-| `src/routes/_authenticated/billing.tsx` | 76 | `TODO: Replace with actual variant ID` |
+| Location | Line | Comment                  |
+| -------- | ---- | ------------------------ |
+| —        | —    | No billing TODOs tracked |
 
 ---
 
@@ -110,8 +106,8 @@ userId: staffUserId as any,
 // src/router.tsx:9
 const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!;
 
-// convex/lemonsqueezy/sync.ts:39
-org = await ctx.db.get(args.orgConvexId as any);
+// convex/polar.ts:27
+      .withIndex('by_workos_user_id', (q: any) => q.eq('workosUserId', identity.subject))
 
 // convex/workos/updateOrg.ts:33
 const updateData: any = { ... };
@@ -121,6 +117,7 @@ const updates: Record<string, any> = { ... };
 ```
 
 **Impact:**
+
 - Loss of type safety for critical ID parameters
 - Potential runtime errors from mismatched types
 - Difficult refactoring (TypeScript won't catch breaking changes)
@@ -149,14 +146,16 @@ const updates: Record<string, any> = { ... };
 
 ### 1. No Rate Limiting on Public Endpoints
 
-**Location:** `convex/webhooks/workos.ts`, `convex/lemonsqueezy/webhook.ts`
+**Location:** `convex/webhooks/workos.ts`, `convex/http.ts`
 
 **Issue:** Webhook endpoints have no rate limiting, making them vulnerable to:
+
 - DDoS attacks
 - Webhook flooding
 - Resource exhaustion
 
 **Current Code:**
+
 ```typescript
 // convex/webhooks/workos.ts:58
 export const handleWorkOSWebhook = httpAction(async (ctx, request) => {
@@ -206,6 +205,7 @@ const clientId = process.env.WORKOS_CLIENT_ID;
 ```
 
 **Impact:**
+
 - Cryptic errors at runtime
 - Potential security issues if malformed values are used
 
@@ -250,6 +250,7 @@ try {
 ```
 
 **Impact:** Users see no feedback when operations fail, leading to:
+
 - Confusion about whether actions succeeded
 - Repeated failed attempts
 - Poor UX
@@ -267,6 +268,7 @@ defaultErrorComponent: (err) => <p>{err.error.stack}</p>,
 **Issue:** Stack traces are exposed to end users in production.
 
 **Security Impact:** Information disclosure - stack traces can reveal:
+
 - File paths
 - Code structure
 - Internal implementation details
@@ -326,12 +328,12 @@ numbers: defineTable({
 
 ### 3. Free Tier Hardcoded in Multiple Places
 
-**Locations:** `convex/lemonsqueezy/plans.ts`, `src/routes/_authenticated/billing.tsx`
+**Locations:** `convex/billing/plans.ts`, `src/config/billing.ts`
 
 **Issue:** Free tier limits are defined in both backend and frontend:
 
 ```typescript
-// convex/lemonsqueezy/plans.ts:12-16
+// convex/billing/plans.ts:1-5
 export const FREE_TIER_LIMITS = {
   maxCustomers: 3,
   maxStaff: 2,
@@ -362,13 +364,14 @@ const queryClient = new QueryClient({
     queries: {
       queryKeyHashFn: convexQueryClient.hashFn(),
       queryFn: convexQueryClient.queryFn(),
-      gcTime: 5000,  // Very short cache time
+      gcTime: 5000, // Very short cache time
     },
   },
 });
 ```
 
 **Issue:** `gcTime: 5000` (5 seconds) is extremely short, potentially causing:
+
 - Excessive re-fetching
 - Unnecessary network traffic
 - Poor perceived performance
@@ -401,9 +404,9 @@ const org = useQuery(api.orgs.get.getMyOrg);
 ```typescript
 // convex/customers/crud.ts:55-60
 const customers = await ctx.db
-  .query("customers")
-  .withIndex("by_org", (q) => q.eq("orgId", user.orgId))
-  .collect();  // Returns ALL customers
+  .query('customers')
+  .withIndex('by_org', (q) => q.eq('orgId', user.orgId))
+  .collect(); // Returns ALL customers
 ```
 
 **Impact:** Performance degradation as data grows. No upper bound on result set size.
@@ -419,20 +422,21 @@ const customers = await ctx.db
 ```typescript
 // Pattern repeated in ~20+ files:
 const user = await ctx.db
-  .query("users")
-  .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", identity.subject))
+  .query('users')
+  .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', identity.subject))
   .unique();
 
 if (!user) {
-  throw new ConvexError("User record not found");
+  throw new ConvexError('User record not found');
 }
 
-if (user.role !== "admin") {
-  throw new ConvexError("Admin role required");
+if (user.role !== 'admin') {
+  throw new ConvexError('Admin role required');
 }
 ```
 
 **Impact:**
+
 - Code duplication
 - Inconsistent error messages
 - Hard to maintain (change auth logic in 20+ places)
@@ -461,12 +465,13 @@ const isAdmin = userInfo?.role === 'admin';
 **Issue:** Error messages are hardcoded as strings throughout the codebase:
 
 ```typescript
-throw new ConvexError("Not authenticated");
-throw new ConvexError("Admin role required to send invitations");
-throw new ConvexError("User not in organization");
+throw new ConvexError('Not authenticated');
+throw new ConvexError('Admin role required to send invitations');
+throw new ConvexError('User not in organization');
 ```
 
 **Impact:**
+
 - Difficult to change or internationalize
 - Prone to typos/inconsistencies
 - Hard to programmatically handle specific errors
@@ -543,6 +548,7 @@ throw new ConvexError("User not in organization");
 > **Note:** No test suite is currently implemented. Tests should be added as the project matures.
 
 **Impact:**
+
 - No regression protection
 - Manual testing required for all changes
 - Difficult to refactor safely
@@ -552,6 +558,7 @@ throw new ConvexError("User not in organization");
 ### 2. No E2E Tests for Critical Flows
 
 **Missing Coverage:**
+
 - User authentication flow
 - Organization creation
 - Customer CRUD operations
@@ -574,6 +581,7 @@ throw new ConvexError("User not in organization");
 ```
 
 **Issue:** Only handles `invitation.accepted` event. Other important events are ignored:
+
 - `user.created`
 - `user.updated`
 - `organization.updated`
@@ -620,12 +628,12 @@ throw new ConvexError("User not in organization");
 
 ## Summary Statistics
 
-| Category | Count |
-|----------|-------|
-| TODO/FIXME Comments | 3 |
-| `as any` Usages | 15+ |
-| `console.error` Without User Feedback | 8 |
-| Webhook Endpoints Without Rate Limiting | 2 |
-| Missing Environment Validations | 3 |
-| Incomplete Features | 3 |
-| Security Concerns | 4 |
+| Category                                | Count |
+| --------------------------------------- | ----- |
+| TODO/FIXME Comments                     | 3     |
+| `as any` Usages                         | 15+   |
+| `console.error` Without User Feedback   | 8     |
+| Webhook Endpoints Without Rate Limiting | 2     |
+| Missing Environment Validations         | 3     |
+| Incomplete Features                     | 3     |
+| Security Concerns                       | 4     |

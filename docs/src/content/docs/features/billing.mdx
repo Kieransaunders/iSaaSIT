@@ -8,45 +8,45 @@ Billing in iSaaSIT is handled at the Organization level with usage-based caps.
 ## Overview
 
 :::note[Optional]
-Billing integration is included, but it is optional. The starter kit works on the free tier without Lemon Squeezy configured.
+Billing integration is included, but it is optional. The starter kit works on the free tier without Polar configured.
 :::
 
 ## Billing Model
 
 - **Billing Entity**: Organization (not individual users)
-- **Provider**: Lemon Squeezy (Merchant of Record)
+- **Provider**: Polar
 - **Pricing**: Based on usage caps
 
 ## Usage Caps
 
 Each subscription plan defines caps for:
 
-| Cap | Description |
-|-----|-------------|
-| `maxCustomers` | Maximum client companies |
-| `maxStaff` | Maximum staff members |
-| `maxClients` | Maximum client users per customer |
+| Cap            | Description                       |
+| -------------- | --------------------------------- |
+| `maxCustomers` | Maximum client companies          |
+| `maxStaff`     | Maximum staff members             |
+| `maxClients`   | Maximum client users per customer |
 
 ## Implementation Notes
 
-- Subscriptions sync via Lemon Squeezy webhooks.
-- Plan limits are enforced based on the variant ID stored on the org.
+- Subscriptions sync via Polar webhooks.
+- Plan limits are enforced based on the product key mapped in the Polar configuration.
 - Org records store subscription status, plan ID, usage caps, and trial/end dates.
 
 ## Configuration
 
-- Set `VITE_LEMONSQUEEZY_*` variables in `.env.local` for the checkout UI.
-- Set `LEMONSQUEEZY_*` variables in Convex for webhook processing and plan limits.
+- Set `VITE_POLAR_SERVER` in `.env.local` for optional UI hints.
+- Set `POLAR_*` variables in Convex for webhooks and product mapping.
 - See `SETUP.md` for the full step-by-step configuration.
 
 ## Webhook Handling
 
 When implemented, webhooks will handle:
 
-- `subscription_created`
-- `subscription_updated`
-- `subscription_cancelled`
-- `subscription_expired`
+- `product.created`
+- `product.updated`
+- `subscription.created`
+- `subscription.updated`
 
 ## Enforcing Caps
 
@@ -55,21 +55,18 @@ export const createCustomer = mutation({
   args: { name: v.string() },
   handler: async (ctx, args) => {
     const org = await getCurrentOrg(ctx);
-    
+
     // Check current usage
     const currentCount = await ctx.db
       .query('customers')
-      .withIndex('by_org', q => q.eq('orgId', org._id))
+      .withIndex('by_org', (q) => q.eq('orgId', org._id))
       .collect();
-    
+
     // Enforce cap
     if (currentCount.length >= org.maxCustomers) {
-      throw new Error(
-        `Customer limit reached (${org.maxCustomers}). ` +
-        `Please upgrade your plan.`
-      );
+      throw new Error(`Customer limit reached (${org.maxCustomers}). ` + `Please upgrade your plan.`);
     }
-    
+
     // Create customer...
   },
 });

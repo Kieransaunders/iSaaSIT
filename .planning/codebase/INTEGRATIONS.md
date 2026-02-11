@@ -8,19 +8,21 @@
 
 **Primary Auth Provider** - Enterprise-grade authentication platform
 
-| Aspect | Details |
-|--------|---------|
-| **Service** | WorkOS AuthKit |
-| **SDK** | `@workos/authkit-tanstack-react-start` (v0.5.0) |
-| **Node SDK** | `@workos-inc/node` (v8.1.0) |
-| **Protocol** | OAuth 2.0 + JWT |
-| **Token Type** | RS256 signed JWT |
+| Aspect         | Details                                         |
+| -------------- | ----------------------------------------------- |
+| **Service**    | WorkOS AuthKit                                  |
+| **SDK**        | `@workos/authkit-tanstack-react-start` (v0.5.0) |
+| **Node SDK**   | `@workos-inc/node` (v8.1.0)                     |
+| **Protocol**   | OAuth 2.0 + JWT                                 |
+| **Token Type** | RS256 signed JWT                                |
 
 **Configuration Files:**
+
 - `convex/auth.config.ts` - JWT validation configuration
 - `convex.json` - AuthKit deployment settings (dev/preview/prod)
 
 **Environment Variables:**
+
 ```bash
 WORKOS_CLIENT_ID=client_xxx
 WORKOS_API_KEY=sk_test_xxx
@@ -29,6 +31,7 @@ WORKOS_REDIRECT_URI=http://localhost:3000/callback
 ```
 
 **Features Used:**
+
 - OAuth/OIDC authentication
 - Organization management
 - User invitations
@@ -36,6 +39,7 @@ WORKOS_REDIRECT_URI=http://localhost:3000/callback
 - JWT token validation via JWKS
 
 **Integration Points:**
+
 - `src/routes/__root.tsx` - AuthKitProvider setup
 - `src/routes/callback.tsx` - OAuth callback handler
 - `src/routes/_authenticated.tsx` - Protected route guard
@@ -44,6 +48,7 @@ WORKOS_REDIRECT_URI=http://localhost:3000/callback
 - `convex/webhooks/workos.ts` - WorkOS webhooks
 
 **JWKS Endpoint:**
+
 ```
 https://api.workos.com/sso/jwks/${WORKOS_CLIENT_ID}
 ```
@@ -54,24 +59,27 @@ https://api.workos.com/sso/jwks/${WORKOS_CLIENT_ID}
 
 **Primary Database** - Serverless reactive database
 
-| Aspect | Details |
-|--------|---------|
-| **Service** | Convex (convex.dev) |
-| **Client SDK** | `convex` (v1.31.7) |
-| **React Integration** | `@convex-dev/react-query` (v0.1.0) |
-| **Language** | TypeScript (transpiled to Deno) |
-| **Model** | Document store with real-time subscriptions |
+| Aspect                | Details                                     |
+| --------------------- | ------------------------------------------- |
+| **Service**           | Convex (convex.dev)                         |
+| **Client SDK**        | `convex` (v1.31.7)                          |
+| **React Integration** | `@convex-dev/react-query` (v0.1.0)          |
+| **Language**          | TypeScript (transpiled to Deno)             |
+| **Model**             | Document store with real-time subscriptions |
 
 **Configuration:**
+
 - `convex.json` - Deployment configuration
 - `convex/schema.ts` - Database schema definition
 
 **Environment Variable:**
+
 ```bash
 VITE_CONVEX_URL=https://xxx.convex.cloud
 ```
 
 **Schema Tables:**
+
 ```typescript
 // convex/schema.ts
 - orgs              # Organizations with billing data
@@ -83,19 +91,21 @@ VITE_CONVEX_URL=https://xxx.convex.cloud
 ```
 
 **Convex Function Types:**
+
 - **Queries** - Read operations (cached, realtime)
 - **Mutations** - Write operations (transactional)
 - **Actions** - External API calls (HTTP)
 - **HTTP Routes** - Webhook endpoints
 
 **Feature Modules:**
+
 ```
 convex/
 ├── assignments/     # Staff-customer assignments
 ├── billing/         # Subscription and billing
 ├── customers/       # Customer CRUD
 ├── invitations/     # User invitations
-├── lemonsqueezy/    # Billing provider integration
+├── polar.ts         # Billing provider integration
 ├── orgs/            # Organization management
 ├── users/           # User management
 ├── webhooks/        # Webhook handlers
@@ -104,35 +114,36 @@ convex/
 
 ## Billing and Payments
 
-### Lemon Squeezy
+### Polar
 
-**Payment Processor** - Merchant of Record for subscriptions
+**Payment Processor** - Subscription billing via Polar
 
-| Aspect | Details |
-|--------|---------|
-| **Service** | Lemon Squeezy |
-| **SDK** | `@lemonsqueezy/lemonsqueezy.js` (v4.0.0) |
-| **Model** | Subscription-based SaaS billing |
+| Aspect      | Details                         |
+| ----------- | ------------------------------- |
+| **Service** | Polar                           |
+| **SDK**     | `@convex-dev/polar`             |
+| **Model**   | Subscription-based SaaS billing |
 
 **Integration Files:**
-- `convex/lemonsqueezy/webhook.ts` - Webhook handler
-- `convex/lemonsqueezy/signature.ts` - Signature verification
-- `convex/lemonsqueezy/sync.ts` - Subscription sync
-- `convex/lemonsqueezy/plans.ts` - Plan management
+
+- `convex/polar.ts` - Polar client configuration
 - `convex/billing/` - Billing queries and actions
 
 **Webhook Endpoint:**
+
 ```
-POST /lemonsqueezy/webhook
+POST /polar/events
 ```
 
 **Configuration:**
-- Webhook secret set in Convex dashboard
-- Signature verification using HMAC
+
+- Organization token and webhook secret in Convex env
+- Product IDs mapped in `convex/polar.ts`
 
 **Synced Data:**
+
 - Subscription status
-- Plan metadata (maxCustomers, maxStaff, maxClients)
+- Product metadata (maxCustomers, maxStaff, maxClients)
 - Customer portal URLs
 - Trial dates
 
@@ -149,22 +160,23 @@ POST /webhooks/workos
 **Handler:** `convex/webhooks/workos.ts`
 
 **Events Handled:**
+
 - Organization created/updated
 - User membership changes
 - Invitation status updates
 
-### 2. Lemon Squeezy Webhooks
+### 2. Polar Webhooks
 
 ```
-POST /lemonsqueezy/webhook
+POST /polar/events
 ```
 
-**Handler:** `convex/lemonsqueezy/webhook.ts`
+**Handler:** `convex/http.ts` via `polar.registerRoutes`
 
 **Events Handled:**
-- Subscription created/updated/cancelled
-- Payment success/failure
-- Plan changes
+
+- Product created/updated
+- Subscription created/updated
 
 ## Deployment and Hosting
 
@@ -172,22 +184,24 @@ POST /lemonsqueezy/webhook
 
 **Primary Hosting Platform**
 
-| Aspect | Details |
-|--------|---------|
-| **Build Command** | `npm run build:combined` |
-| **Publish Directory** | `dist/client` |
-| **Node Version** | 22.x |
-| **Plugin** | `@netlify/vite-plugin-tanstack-start` (v1.2.8) |
+| Aspect                | Details                                        |
+| --------------------- | ---------------------------------------------- |
+| **Build Command**     | `npm run build:combined`                       |
+| **Publish Directory** | `dist/client`                                  |
+| **Node Version**      | 22.x                                           |
+| **Plugin**            | `@netlify/vite-plugin-tanstack-start` (v1.2.8) |
 
 **Configuration:** `netlify.toml`
 
 **Features:**
+
 - SSR function deployment
 - Static asset serving
 - Redirect rules for docs
 - Cache headers
 
 **Redirects:**
+
 ```
 /docs/*      → Static docs files
 /blog/*      → /docs/blog/*
@@ -203,6 +217,7 @@ npx convex dev       # Development mode
 ```
 
 **Environments:**
+
 - Dev: Local development with `convex dev`
 - Preview: Branch deploys
 - Prod: Production deployment
@@ -211,27 +226,30 @@ npx convex dev       # Development mode
 
 ### Third-Party SDKs Summary
 
-| Provider | SDK | Version | Purpose |
-|----------|-----|---------|---------|
-| WorkOS | `@workos/authkit-tanstack-react-start` | 0.5.0 | React integration |
-| WorkOS | `@workos-inc/node` | 8.1.0 | Server-side API |
-| Lemon Squeezy | `@lemonsqueezy/lemonsqueezy.js` | 4.0.0 | Billing API |
-| Convex | `convex` | 1.31.7 | Database client |
-| Convex | `@convex-dev/react-query` | 0.1.0 | React Query bridge |
+| Provider | SDK                                    | Version | Purpose            |
+| -------- | -------------------------------------- | ------- | ------------------ |
+| WorkOS   | `@workos/authkit-tanstack-react-start` | 0.5.0   | React integration  |
+| WorkOS   | `@workos-inc/node`                     | 8.1.0   | Server-side API    |
+| Polar    | `@convex-dev/polar`                    | 0.1.0   | Billing API        |
+| Convex   | `convex`                               | 1.31.7  | Database client    |
+| Convex   | `@convex-dev/react-query`              | 0.1.0   | React Query bridge |
 
 ### API Endpoints (External)
 
 **WorkOS API:**
+
 ```
 https://api.workos.com/
 ```
 
-**Lemon Squeezy API:**
+**Polar API:**
+
 ```
-https://api.lemonsqueezy.com/
+https://api.polar.sh/
 ```
 
 **Convex API:**
+
 ```
 https://{deployment-name}.convex.cloud
 ```
@@ -250,9 +268,14 @@ WORKOS_REDIRECT_URI           # OAuth callback URL
 # Convex
 VITE_CONVEX_URL               # Convex deployment URL
 
-# Lemon Squeezy (stored in Convex dashboard)
-LEMONSQUEEZY_API_KEY          # API key
-LEMONSQUEEZY_WEBHOOK_SECRET   # Webhook signing secret
+# Polar (stored in Convex dashboard)
+POLAR_ORGANIZATION_TOKEN      # Organization token
+POLAR_WEBHOOK_SECRET          # Webhook signing secret
+POLAR_SERVER                  # sandbox | production
+POLAR_PRO_MONTHLY_PRODUCT_ID  # Product ID
+POLAR_PRO_YEARLY_PRODUCT_ID   # Product ID
+POLAR_BUSINESS_MONTHLY_PRODUCT_ID # Product ID
+POLAR_BUSINESS_YEARLY_PRODUCT_ID  # Product ID
 ```
 
 ### Authentication Flow

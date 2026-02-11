@@ -7,12 +7,12 @@
 
 ## Overview
 
-| Phase | Name                 | Goal                                     | Status      | Progress |
-| ----- | -------------------- | ---------------------------------------- | ----------- | -------- |
-| 1     | WorkOS Integration ✓ | Real org creation with WorkOS API        | ✓ Complete  | 100%     |
-| 2     | Team Management      | Invite users and manage assignments      | In Progress | 80%      |
-| 3     | Billing              | Lemon Squeezy subscription integration   | In Progress | 40%      |
-| 4     | Polar Migration      | Replace Lemon Squeezy with Polar billing | Planned     | 0%       |
+| Phase | Name                 | Goal                                | Status      | Progress |
+| ----- | -------------------- | ----------------------------------- | ----------- | -------- |
+| 1     | WorkOS Integration ✓ | Real org creation with WorkOS API   | ✓ Complete  | 100%     |
+| 2     | Team Management      | Invite users and manage assignments | In Progress | 80%      |
+| 3     | Billing              | Polar subscription integration      | In Progress | 40%      |
+| 4     | Polar Migration      | Replace legacy billing with Polar   | Planned     | 0%       |
 
 ---
 
@@ -64,7 +64,7 @@
 
 ## Phase 3: Billing (In Progress)
 
-**Goal:** Working Lemon Squeezy subscriptions with usage cap enforcement  
+**Goal:** Working Polar subscriptions with usage cap enforcement  
 **Status:** 3 of 6 plans complete (50%)
 
 **Plans:** 6 plans
@@ -78,30 +78,30 @@
 
 **Requirements:**
 
-- BILL-01: Org has subscription status synced from Lemon Squeezy
-- BILL-02: Admin can upgrade via Lemon Squeezy checkout
+- BILL-01: Org has subscription status synced from Polar
+- BILL-02: Admin can upgrade via Polar checkout
 - BILL-03: Webhook handler processes subscription events
 - BILL-04: Plan caps update on subscription change
 - BILL-05: Usage cap enforced on staff/client creation
 - BILL-06: Billing page shows real usage from Convex
 
-**Blocker:** Real Lemon Squeezy checkout + webhook verification pending (test mode)
+**Blocker:** Real Polar checkout + webhook verification pending (test mode)
 
 ---
 
 ## Phase 4: Polar Migration (Planned)
 
-**Goal:** Replace Lemon Squeezy billing with Polar component integration and updated docs  
+**Goal:** Replace legacy billing with Polar component integration and updated docs  
 **Status:** Planned (2026-02-11)
 
 **Plans:** 2 plans
 
-- [ ] 04-01-PLAN.md — Polar backend integration and Lemon Squeezy removal
+- [ ] 04-01-PLAN.md — Polar backend integration and legacy billing removal
 - [ ] 04-02-PLAN.md — Billing UI + docs migration to Polar
 
 **Requirements:**
 
-- Replace Lemon Squeezy backend/webhooks with Polar component
+- Replace legacy backend/webhooks with Polar component
 - Update billing UI to use Polar checkout and portal
 - Update docs, README, and env setup to Polar
 
@@ -111,7 +111,7 @@
 
 - **2026-02-10:** Phase 2 signed off — Bug fixes applied (index optimization, orphaned invitation cleanup, usage cap checks on resend)
 - **2026-02-09:** Plan 03-02 complete — Billing backend operations (usage queries, checkout URL, subscription cancellation)
-- **2026-02-09:** Plan 03-01 complete — Lemon Squeezy webhook handler and subscription sync
+- **2026-02-09:** Plan 03-01 complete — Billing webhook handler and subscription sync
 - **2026-02-09:** Plan 02-04 complete — Team management UI with tabbed interface, invite dialog, member/invitation tables
 - **2026-02-09:** Plan 02-03 complete — WorkOS webhook handler (invitation.accepted) + user management backend (remove/restore/list)
 - **2026-02-09:** Plan 02-02 complete — Staff assignment mutations/queries + customer detail assignment UI
@@ -120,15 +120,15 @@
 
 ## Ship Blockers (as of 2026-02-10)
 
-- [x] Fix Lemon Squeezy plan mapping to use real variant IDs (`convex/lemonsqueezy/plans.ts`)
+- [x] Configure Polar product IDs in `convex/polar.ts`
 - [ ] Enforce admin role on org settings updates (`convex/workos/updateOrg.ts`)
 - [ ] Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments)
 - [ ] Handle customer deletion with client users/invites (block or cascade cleanup)
 - [x] Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
 - [ ] Clarify restore-user behavior (reinvite vs restore), adjust UI accordingly
 - [ ] Configure WorkOS webhook endpoint and `WORKOS_WEBHOOK_SECRET`
-- [ ] Configure Lemon Squeezy webhook endpoint and environment variables
-- [ ] Verify Lemon Squeezy checkout + webhook end-to-end (test mode)
+- [ ] Configure Polar webhook endpoint and environment variables
+- [ ] Verify Polar checkout + webhook end-to-end (test mode)
 - [x] Add CapReachedBanner to invite flow
 - [x] Update docs to reflect billing is implemented and required Convex env vars
 - [ ] Run v1 smoke test checklist and update requirement statuses

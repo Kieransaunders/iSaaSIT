@@ -101,13 +101,13 @@ src/
 
 ### Route Naming Conventions
 
-| Pattern | Example | Result |
-|---------|---------|--------|
-| `file.tsx` | `index.tsx` | `/` |
-| `file.tsx` | `dashboard.tsx` | `/dashboard` |
-| `_prefix.tsx` | `_authenticated.tsx` | Layout only (no URL) |
-| `dir/file.tsx` | `customers/$id.tsx` | `/customers/:id` |
-| `__root.tsx` | `__root.tsx` | Root layout (required) |
+| Pattern        | Example              | Result                 |
+| -------------- | -------------------- | ---------------------- |
+| `file.tsx`     | `index.tsx`          | `/`                    |
+| `file.tsx`     | `dashboard.tsx`      | `/dashboard`           |
+| `_prefix.tsx`  | `_authenticated.tsx` | Layout only (no URL)   |
+| `dir/file.tsx` | `customers/$id.tsx`  | `/customers/:id`       |
+| `__root.tsx`   | `__root.tsx`         | Root layout (required) |
 
 ---
 
@@ -135,11 +135,7 @@ convex/
 │   ├── manage.ts
 │   ├── queries.ts
 │   └── send.ts
-├── lemonsqueezy/              # Payment integration
-│   ├── plans.ts
-│   ├── signature.ts
-│   ├── sync.ts
-│   └── webhook.ts
+├── polar.ts                   # Payment integration
 ├── myFunctions.ts             # Template/example functions
 ├── orgs/                      # Organization management
 │   ├── create.ts
@@ -162,16 +158,16 @@ convex/
 
 ### Convex File Naming
 
-| File Type | Naming | Example |
-|-----------|--------|---------|
-| Schema | `schema.ts` | `convex/schema.ts` |
-| HTTP routes | `http.ts` | `convex/http.ts` |
-| Auth config | `auth.config.ts` | `convex/auth.config.ts` |
-| Feature queries | `queries.ts` | `convex/orgs/queries.ts` |
-| Feature mutations | `mutations.ts` | `convex/orgs/mutations.ts` |
-| Feature actions | `actions.ts` | `convex/billing/actions.ts` |
-| CRUD operations | `crud.ts` | `convex/customers/crud.ts` |
-| Webhook handler | `[service].ts` | `convex/webhooks/workos.ts` |
+| File Type         | Naming           | Example                     |
+| ----------------- | ---------------- | --------------------------- |
+| Schema            | `schema.ts`      | `convex/schema.ts`          |
+| HTTP routes       | `http.ts`        | `convex/http.ts`            |
+| Auth config       | `auth.config.ts` | `convex/auth.config.ts`     |
+| Feature queries   | `queries.ts`     | `convex/orgs/queries.ts`    |
+| Feature mutations | `mutations.ts`   | `convex/orgs/mutations.ts`  |
+| Feature actions   | `actions.ts`     | `convex/billing/actions.ts` |
+| CRUD operations   | `crud.ts`        | `convex/customers/crud.ts`  |
+| Webhook handler   | `[service].ts`   | `convex/webhooks/workos.ts` |
 
 ---
 
@@ -179,15 +175,15 @@ convex/
 
 ### Build & Development
 
-| File | Purpose |
-|------|---------|
-| `vite.config.ts` | Vite build configuration, plugins, dev server |
-| `tsconfig.json` | TypeScript compiler options, path aliases |
-| `postcss.config.mjs` | PostCSS config (Tailwind v4) |
-| `prettier.config.mjs` | Code formatting rules |
-| `eslint.config.mjs` | Linting rules |
-| `convex.json` | Convex deployment and AuthKit settings |
-| `netlify.toml` | Netlify deployment configuration |
+| File                  | Purpose                                       |
+| --------------------- | --------------------------------------------- |
+| `vite.config.ts`      | Vite build configuration, plugins, dev server |
+| `tsconfig.json`       | TypeScript compiler options, path aliases     |
+| `postcss.config.mjs`  | PostCSS config (Tailwind v4)                  |
+| `prettier.config.mjs` | Code formatting rules                         |
+| `eslint.config.mjs`   | Linting rules                                 |
+| `convex.json`         | Convex deployment and AuthKit settings        |
+| `netlify.toml`        | Netlify deployment configuration              |
 
 ### Path Aliases (from `tsconfig.json`)
 
@@ -246,12 +242,12 @@ docs/
 
 ## Scripts (`scripts/`)
 
-| Script | Purpose |
-|--------|---------|
-| `post-install.js` | Post-install setup tasks |
-| `setup.js` | Initial project setup |
-| `setup-gsd.js` | GSD (Get Shit Done) setup |
-| `preview-combined.js` | Preview combined build |
+| Script                | Purpose                   |
+| --------------------- | ------------------------- |
+| `post-install.js`     | Post-install setup tasks  |
+| `setup.js`            | Initial project setup     |
+| `setup-gsd.js`        | GSD (Get Shit Done) setup |
+| `preview-combined.js` | Preview combined build    |
 
 ---
 
@@ -259,34 +255,34 @@ docs/
 
 ### By Concern
 
-| Concern | Location |
-|---------|----------|
-| **Routes/Pages** | `src/routes/**/*.tsx` |
-| **Layout Components** | `src/components/layout/*.tsx` |
-| **UI Components** | `src/components/ui/*.tsx` |
-| **Database Schema** | `convex/schema.ts` |
-| **API Functions** | `convex/**/*.ts` (except `_generated/`) |
-| **Auth Logic** | `src/routes/_authenticated.tsx`, `convex/auth.config.ts` |
-| **Billing Logic** | `convex/billing/`, `convex/lemonsqueezy/` |
-| **Styling** | `src/app.css`, component `className` props |
-| **Utilities** | `src/lib/utils.ts` |
-| **Constants** | `src/lib/constants.ts` |
-| **Webhooks** | `convex/http.ts`, `convex/webhooks/` |
-| **Hooks** | `src/hooks/*.ts` |
+| Concern               | Location                                                 |
+| --------------------- | -------------------------------------------------------- |
+| **Routes/Pages**      | `src/routes/**/*.tsx`                                    |
+| **Layout Components** | `src/components/layout/*.tsx`                            |
+| **UI Components**     | `src/components/ui/*.tsx`                                |
+| **Database Schema**   | `convex/schema.ts`                                       |
+| **API Functions**     | `convex/**/*.ts` (except `_generated/`)                  |
+| **Auth Logic**        | `src/routes/_authenticated.tsx`, `convex/auth.config.ts` |
+| **Billing Logic**     | `convex/billing/`, `convex/polar.ts`                     |
+| **Styling**           | `src/app.css`, component `className` props               |
+| **Utilities**         | `src/lib/utils.ts`                                       |
+| **Constants**         | `src/lib/constants.ts`                                   |
+| **Webhooks**          | `convex/http.ts`, `convex/webhooks/`                     |
+| **Hooks**             | `src/hooks/*.ts`                                         |
 
 ### By Task
 
-| Task | Where to Look |
-|------|---------------|
-| Add a new page | `src/routes/` |
-| Change navigation | `src/components/layout/app-sidebar.tsx` |
-| Modify database | `convex/schema.ts` → `convex/[feature]/` |
-| Add API endpoint | `convex/[feature]/[queries\|mutations].ts` |
+| Task                 | Where to Look                                            |
+| -------------------- | -------------------------------------------------------- |
+| Add a new page       | `src/routes/`                                            |
+| Change navigation    | `src/components/layout/app-sidebar.tsx`                  |
+| Modify database      | `convex/schema.ts` → `convex/[feature]/`                 |
+| Add API endpoint     | `convex/[feature]/[queries\|mutations].ts`               |
 | Change auth behavior | `src/routes/_authenticated.tsx`, `convex/auth.config.ts` |
-| Update billing | `convex/billing/`, `convex/lemonsqueezy/` |
-| Style changes | `src/app.css`, Tailwind classes in components |
-| Add component | `src/components/ui/` (shadcn pattern) |
-| Handle webhooks | `convex/http.ts`, `convex/webhooks/` |
+| Update billing       | `convex/billing/`, `convex/polar.ts`                     |
+| Style changes        | `src/app.css`, Tailwind classes in components            |
+| Add component        | `src/components/ui/` (shadcn pattern)                    |
+| Handle webhooks      | `convex/http.ts`, `convex/webhooks/`                     |
 
 ---
 
@@ -294,24 +290,25 @@ docs/
 
 These files are regenerated automatically and should not be manually modified:
 
-| File | Generated By |
-|------|--------------|
+| File                   | Generated By                                 |
+| ---------------------- | -------------------------------------------- |
 | `src/routeTree.gen.ts` | TanStack Router (`vite dev` or `vite build`) |
-| `convex/_generated/*` | Convex CLI (`convex dev` or `convex deploy`) |
-| `tsconfig.tsbuildinfo` | TypeScript |
+| `convex/_generated/*`  | Convex CLI (`convex dev` or `convex deploy`) |
+| `tsconfig.tsbuildinfo` | TypeScript                                   |
 
 ---
 
 ## Environment Configuration
 
-| File | Environment | Purpose |
-|------|-------------|---------|
-| `.env.local` | Local dev | Local secrets and config |
-| `.env.local.example` | Template | Template for `.env.local` |
-| Netlify env vars | Production | Production secrets |
-| Convex env vars | All | Convex-specific settings |
+| File                 | Environment | Purpose                   |
+| -------------------- | ----------- | ------------------------- |
+| `.env.local`         | Local dev   | Local secrets and config  |
+| `.env.local.example` | Template    | Template for `.env.local` |
+| Netlify env vars     | Production  | Production secrets        |
+| Convex env vars      | All         | Convex-specific settings  |
 
 **Required Environment Variables**:
+
 ```bash
 # WorkOS AuthKit
 WORKOS_CLIENT_ID=client_xxx

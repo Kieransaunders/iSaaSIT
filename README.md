@@ -34,8 +34,9 @@ Most SaaS starter kits give you auth + billing. **iSaaSIT gives you multi-tenant
 ```
 
 **Three roles, proper isolation:**
+
 - **Admin** - Manages agency, billing, all clients
-- **Staff** - Access only to assigned client accounts  
+- **Staff** - Access only to assigned client accounts
 - **Client** - Access only to their own company data
 
 ---
@@ -44,16 +45,17 @@ Most SaaS starter kits give you auth + billing. **iSaaSIT gives you multi-tenant
 
 iSaaSIT is built specifically for **agencies and service businesses** managing multiple clients:
 
-| Business Type | Use Case |
-|--------------|----------|
-| 🎨 **Design Agencies** | Client project portals with file sharing |
-| 💼 **Consulting Firms** | Client dashboards for deliverables |
-| 📊 **Accounting Practices** | Secure document exchange |
-| 💻 **Development Shops** | Client project management |
-| 📈 **Marketing Agencies** | Campaign dashboards & reporting |
-| 🔧 **IT Services** | Managed services client portals |
+| Business Type               | Use Case                                 |
+| --------------------------- | ---------------------------------------- |
+| 🎨 **Design Agencies**      | Client project portals with file sharing |
+| 💼 **Consulting Firms**     | Client dashboards for deliverables       |
+| 📊 **Accounting Practices** | Secure document exchange                 |
+| 💻 **Development Shops**    | Client project management                |
+| 📈 **Marketing Agencies**   | Campaign dashboards & reporting          |
+| 🔧 **IT Services**          | Managed services client portals          |
 
 **Perfect if you need:**
+
 - ✅ Data isolation between clients
 - ✅ Staff assigned to specific accounts
 - ✅ Client portal login for customers
@@ -64,60 +66,65 @@ iSaaSIT is built specifically for **agencies and service businesses** managing m
 ## 🚀 Features
 
 ### Core Platform
-| Feature | Status | Description |
-|---------|--------|-------------|
-| 🔐 **Enterprise Auth** | ✅ Ready | WorkOS AuthKit with SSO, social login, magic links |
-| 🏢 **Multi-tenant Orgs** | ✅ Ready | Complete data isolation between agencies |
+
+| Feature                  | Status   | Description                                             |
+| ------------------------ | -------- | ------------------------------------------------------- |
+| 🔐 **Enterprise Auth**   | ✅ Ready | WorkOS AuthKit with SSO, social login, magic links      |
+| 🏢 **Multi-tenant Orgs** | ✅ Ready | Complete data isolation between agencies                |
 | 👥 **Role-based Access** | ✅ Ready | Admin / Staff / Client roles with different permissions |
-| 📊 **Dashboard** | ✅ Ready | Agency overview with usage stats |
-| ⚙️ **Settings** | ✅ Ready | Org configuration & preferences |
+| 📊 **Dashboard**         | ✅ Ready | Agency overview with usage stats                        |
+| ⚙️ **Settings**          | ✅ Ready | Org configuration & preferences                         |
 
 ### Client Management
-| Feature | Status | Description |
-|---------|--------|-------------|
-| 🏢 **Customer CRUD** | ✅ Ready | Create, manage client companies |
-| 👤 **Staff Assignments** | ✅ Ready | Assign team members to specific clients |
-| 🔒 **Data Isolation** | ✅ Ready | Staff/clients only see their data (backend enforced) |
-| 🔍 **Search & Filter** | ✅ Ready | Find customers quickly |
+
+| Feature                  | Status   | Description                                          |
+| ------------------------ | -------- | ---------------------------------------------------- |
+| 🏢 **Customer CRUD**     | ✅ Ready | Create, manage client companies                      |
+| 👤 **Staff Assignments** | ✅ Ready | Assign team members to specific clients              |
+| 🔒 **Data Isolation**    | ✅ Ready | Staff/clients only see their data (backend enforced) |
+| 🔍 **Search & Filter**   | ✅ Ready | Find customers quickly                               |
 
 ### Team & Invites
-| Feature | Status | Description |
-|---------|--------|-------------|
+
+| Feature                  | Status   | Description                       |
+| ------------------------ | -------- | --------------------------------- |
 | 📧 **Email Invitations** | ✅ Ready | Invite staff & clients via WorkOS |
-| 🎭 **Role Assignment** | ✅ Ready | Set role during invitation |
-| 📋 **Pending Invites** | ✅ Ready | Track and manage invitations |
-| 🚫 **Soft Delete** | ✅ Ready | Remove users without data loss |
+| 🎭 **Role Assignment**   | ✅ Ready | Set role during invitation        |
+| 📋 **Pending Invites**   | ✅ Ready | Track and manage invitations      |
+| 🚫 **Soft Delete**       | ✅ Ready | Remove users without data loss    |
 
 ### Billing
-| Feature | Status | Description |
-|---------|--------|-------------|
-| 💳 **Lemon Squeezy** | ✅ Ready | Subscription billing integration |
-| 📈 **Usage Caps** | ✅ Ready | Enforce limits (customers, staff, clients) |
-| 🔄 **Plan Upgrades** | ✅ Ready | Self-service checkout |
-| 🧾 **Customer Portal** | ✅ Ready | View invoices, manage subscription |
-| ⚠️ **Limit Warnings** | ✅ Ready | UI alerts when approaching caps |
+
+| Feature                | Status   | Description                                |
+| ---------------------- | -------- | ------------------------------------------ |
+| 💳 **Polar**           | ✅ Ready | Subscription billing integration           |
+| 📈 **Usage Caps**      | ✅ Ready | Enforce limits (customers, staff, clients) |
+| 🔄 **Plan Upgrades**   | ✅ Ready | Self-service checkout                      |
+| 🧾 **Customer Portal** | ✅ Ready | View invoices, manage subscription         |
+| ⚠️ **Limit Warnings**  | ✅ Ready | UI alerts when approaching caps            |
 
 ### Developer Experience
-| Feature | Status | Description |
-|---------|--------|-------------|
-| 📘 **Type Safety** | ✅ Ready | End-to-end TypeScript |
-| 🤖 **AI Skills** | ✅ Ready | 6 Claude Code skills bundled |
-| 🎨 **shadcn/ui** | ✅ Ready | 25+ accessible components |
-| 🔄 **Real-time** | ✅ Ready | Live data updates via Convex |
-| 📱 **Responsive** | ✅ Ready | Works on all screen sizes |
+
+| Feature            | Status   | Description                  |
+| ------------------ | -------- | ---------------------------- |
+| 📘 **Type Safety** | ✅ Ready | End-to-end TypeScript        |
+| 🤖 **AI Skills**   | ✅ Ready | 6 Claude Code skills bundled |
+| 🎨 **shadcn/ui**   | ✅ Ready | 25+ accessible components    |
+| 🔄 **Real-time**   | ✅ Ready | Live data updates via Convex |
+| 📱 **Responsive**  | ✅ Ready | Works on all screen sizes    |
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology | Why |
-|-------|------------|-----|
-| **Frontend** | React 19 + TanStack Start | Modern React with SSR, file-based routing |
-| **Backend** | Convex | Real-time database, serverless functions |
-| **Auth** | WorkOS AuthKit | Enterprise-grade, SSO-ready |
-| **Styling** | Tailwind CSS v4 + shadcn/ui | Utility-first, accessible components |
-| **Billing** | Lemon Squeezy | Merchant of record, global tax handling |
-| **Build** | Vite 7 | Fast dev, optimized production |
+| Layer        | Technology                  | Why                                       |
+| ------------ | --------------------------- | ----------------------------------------- |
+| **Frontend** | React 19 + TanStack Start   | Modern React with SSR, file-based routing |
+| **Backend**  | Convex                      | Real-time database, serverless functions  |
+| **Auth**     | WorkOS AuthKit              | Enterprise-grade, SSO-ready               |
+| **Styling**  | Tailwind CSS v4 + shadcn/ui | Utility-first, accessible components      |
+| **Billing**  | Polar                       | Subscription billing with webhooks        |
+| **Build**    | Vite 7                      | Fast dev, optimized production            |
 
 ---
 
@@ -149,17 +156,20 @@ Open [http://localhost:3000](http://localhost:3000) 🎉
 
 ## ⚡ Optional: Enable Paid Plans
 
-The app works great on the **free tier** (3 customers, 2 staff, 10 clients). To enable paid plans with Lemon Squeezy:
+The app works great on the **free tier** (3 customers, 2 staff, 10 clients). To enable paid plans with Polar:
 
 ```bash
-# 1. Add to .env.local
-VITE_LEMONSQUEEZY_STORE_SLUG=your-store-slug
-VITE_LEMONSQUEEZY_PRO_VARIANT_ID=12345
-VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID=67890
+# 1. Optional UI hint
+VITE_POLAR_SERVER=sandbox
 
 # 2. Set Convex environment variables
-npx convex env set LEMONSQUEEZY_API_KEY your_api_key
-npx convex env set LEMONSQUEEZY_WEBHOOK_SECRET your_webhook_secret
+npx convex env set POLAR_ORGANIZATION_TOKEN your_organization_token
+npx convex env set POLAR_WEBHOOK_SECRET your_webhook_secret
+npx convex env set POLAR_SERVER sandbox
+npx convex env set POLAR_PRO_MONTHLY_PRODUCT_ID your_pro_monthly_product_id
+npx convex env set POLAR_PRO_YEARLY_PRODUCT_ID your_pro_yearly_product_id
+npx convex env set POLAR_BUSINESS_MONTHLY_PRODUCT_ID your_business_monthly_product_id
+npx convex env set POLAR_BUSINESS_YEARLY_PRODUCT_ID your_business_yearly_product_id
 ```
 
 See [SETUP.md](SETUP.md) for detailed billing configuration instructions.
@@ -197,7 +207,7 @@ See [SETUP.md](SETUP.md) for detailed billing configuration instructions.
 │   ├── invitations/         # Team invitations
 │   ├── assignments/         # Staff-customer assignments
 │   ├── billing/             # Billing queries & actions
-│   └── lemonsqueezy/        # Lemon Squeezy integration
+│   ├── polar.ts             # Polar configuration
 │
 ├── docs/                    # Documentation site (Starlight)
 ├── .cursor/                 # Cursor IDE rules
@@ -212,17 +222,19 @@ See [SETUP.md](SETUP.md) for detailed billing configuration instructions.
 iSaaSIT is optimized for AI-assisted development. Bundled tools include:
 
 ### Claude Code Skills
+
 All skills are pre-installed in `.claude/skills/`:
 
-| Command | Skill |
-|---------|-------|
-| `/convex` | Backend patterns, queries, mutations |
-| `/tanstack` | Routing, server functions, data fetching |
-| `/tailwind-v4` | Styling with Tailwind CSS v4 |
-| `/shadcn-ui` | Component usage and composition |
+| Command          | Skill                                             |
+| ---------------- | ------------------------------------------------- |
+| `/convex`        | Backend patterns, queries, mutations              |
+| `/tanstack`      | Routing, server functions, data fetching          |
+| `/tailwind-v4`   | Styling with Tailwind CSS v4                      |
+| `/shadcn-ui`     | Component usage and composition                   |
 | `/ui-ux-pro-max` | Design system generator (50+ styles, 97 palettes) |
 
 ### GSD (Get Shit Done)
+
 Meta-prompting system for spec-driven development:
 
 ```bash
@@ -233,7 +245,9 @@ Meta-prompting system for spec-driven development:
 ```
 
 ### Cursor Rules
+
 Contextual rules in `.cursor/rules/`:
+
 - Convex patterns
 - TanStack Router conventions
 - Authentication patterns
@@ -254,6 +268,7 @@ npx convex deploy
 ```
 
 Add environment variables in Netlify dashboard:
+
 - `WORKOS_CLIENT_ID`
 - `WORKOS_API_KEY`
 - `WORKOS_COOKIE_PASSWORD`
@@ -263,6 +278,7 @@ Add environment variables in Netlify dashboard:
 ### Update WorkOS Redirect URI
 
 In WorkOS dashboard, add your production callback URL:
+
 ```
 https://your-domain.com/callback
 ```
@@ -286,11 +302,12 @@ Invited users won’t be attached to an organization until the WorkOS webhook is
 ## 🗺️ Roadmap
 
 ### v1.0 (Current) ✅
+
 - [x] Authentication & org management
 - [x] Customer CRUD with data isolation
 - [x] Team invitations (Staff/Client roles)
 - [x] Staff-customer assignments
-- [x] Usage-based billing with Lemon Squeezy
+- [x] Usage-based billing with Polar
 - [x] Dashboard & settings
 - [x] Client-specific dashboard view
 
@@ -300,6 +317,7 @@ Invited users won’t be attached to an organization until the WorkOS webhook is
 - [ ] API keys for customer integrations
 
 ### v2.0 (Planned)
+
 - [ ] Admin console for platform management
 - [ ] Webhook management
 - [ ] Advanced reporting
@@ -310,20 +328,26 @@ Invited users won’t be attached to an organization until the WorkOS webhook is
 ## 🐛 Troubleshooting
 
 ### "Missing VITE_CONVEX_URL"
+
 Run `npx convex dev` to set up Convex and get your deployment URL.
 
 ### "Authentication failed" / JWT errors
+
 1. Ensure `WORKOS_CLIENT_ID` is set in both `.env.local` and Convex dashboard
 2. Check that your redirect URI matches exactly (including http vs https)
 
 ### "Billing not configured" warning
-This is expected if you haven't set up Lemon Squeezy. The app works fully on the free tier without billing configured.
+
+This is expected if you haven't set up Polar. The app works fully on the free tier without billing configured.
 
 ### setup:check Tool
+
 Run `npm run setup:check` to automatically validate your environment variables and configuration.
 
 ### npm install fails
+
 Try with `--legacy-peer-deps`:
+
 ```bash
 npm install --legacy-peer-deps
 ```

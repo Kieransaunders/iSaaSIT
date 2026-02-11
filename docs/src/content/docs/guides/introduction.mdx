@@ -17,6 +17,7 @@ iSaaSIT is a **SaaS starter pack for agencies** who want to build and deploy **c
 ### Organization (Agency)
 
 The top-level entity representing your agency or company. The Organization:
+
 - Owns all billing and subscription data
 - Manages team members (Admin and Staff roles)
 - Controls global settings and configurations
@@ -24,21 +25,23 @@ The top-level entity representing your agency or company. The Organization:
 ### Customer (Client Company)
 
 A client company managed by the Organization. Each Customer:
+
 - Has isolated data from other customers
 - Can have multiple Client users
 - Is assigned to Staff members for management
 
 ### Users & Roles
 
-| Role | Description |
-|------|-------------|
-| **Admin** | Full access to organization data, billing, and user management |
-| **Staff** | Access only to assigned customers and their data |
-| **Client** | Limited access to their own customer data only |
+| Role       | Description                                                    |
+| ---------- | -------------------------------------------------------------- |
+| **Admin**  | Full access to organization data, billing, and user management |
+| **Staff**  | Access only to assigned customers and their data               |
+| **Client** | Limited access to their own customer data only                 |
 
 ## Technology Stack
 
 ### Frontend
+
 - **React 19** - Modern UI framework
 - **TanStack Start** - Full-stack React framework with SSR
 - **TanStack Router** - File-based routing
@@ -46,12 +49,14 @@ A client company managed by the Organization. Each Customer:
 - **shadcn/ui** - Component library (planned)
 
 ### Backend
+
 - **Convex** - Serverless backend with real-time database
 - **WorkOS AuthKit** - Enterprise-grade authentication
 - **TypeScript 5.9** - Type-safe development
 
 ### Optional Integrations
-- **Lemon Squeezy** - Billing and subscriptions (Merchant of Record)
+
+- **Polar** - Billing and subscriptions
 
 ## Getting Help
 

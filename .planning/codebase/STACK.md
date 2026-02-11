@@ -4,12 +4,12 @@
 
 ## Languages and Runtimes
 
-| Language/Runtime | Version | Purpose |
-|-----------------|---------|---------|
-| **TypeScript** | 5.9.3 | Primary language for all source code |
-| **Node.js** | 22.x (via Netlify) | Server runtime for SSR and build |
-| **Deno** | (via Convex) | Convex function runtime |
-| **ES2022** | Target | JavaScript compilation target |
+| Language/Runtime | Version            | Purpose                              |
+| ---------------- | ------------------ | ------------------------------------ |
+| **TypeScript**   | 5.9.3              | Primary language for all source code |
+| **Node.js**      | 22.x (via Netlify) | Server runtime for SSR and build     |
+| **Deno**         | (via Convex)       | Convex function runtime              |
+| **ES2022**       | Target             | JavaScript compilation target        |
 
 ### TypeScript Configuration
 
@@ -24,46 +24,46 @@
 
 ### Frontend Stack
 
-| Framework/Library | Version | Purpose |
-|------------------|---------|---------|
-| **React** | 19.2.4 | UI component library |
-| **React DOM** | 19.2.4 | DOM rendering |
-| **TanStack Start** | 1.158.0 | Full-stack React framework with SSR |
-| **TanStack Router** | 1.158.0 | File-based routing |
-| **TanStack React Query** | 5.90.20 | Server state management |
+| Framework/Library        | Version | Purpose                             |
+| ------------------------ | ------- | ----------------------------------- |
+| **React**                | 19.2.4  | UI component library                |
+| **React DOM**            | 19.2.4  | DOM rendering                       |
+| **TanStack Start**       | 1.158.0 | Full-stack React framework with SSR |
+| **TanStack Router**      | 1.158.0 | File-based routing                  |
+| **TanStack React Query** | 5.90.20 | Server state management             |
 
 ### Backend Stack
 
-| Framework/Library | Version | Purpose |
-|------------------|---------|---------|
-| **Convex** | 1.31.7 | Serverless backend platform |
-| **@convex-dev/react-query** | 0.1.0 | Convex + React Query integration |
+| Framework/Library           | Version | Purpose                          |
+| --------------------------- | ------- | -------------------------------- |
+| **Convex**                  | 1.31.7  | Serverless backend platform      |
+| **@convex-dev/react-query** | 0.1.0   | Convex + React Query integration |
 
 ### Styling
 
-| Framework/Library | Version | Purpose |
-|------------------|---------|---------|
-| **Tailwind CSS** | 4.1.18 | Utility-first CSS framework |
-| **@tailwindcss/postcss** | 4.1.18 | PostCSS plugin for Tailwind v4 |
-| **tw-animate-css** | 1.4.0 | Animation utilities |
-| **class-variance-authority** | 0.7.1 | Component variant management |
-| **tailwind-merge** | 3.4.0 | Tailwind class merging |
-| **clsx** | 2.1.1 | Conditional class utilities |
+| Framework/Library            | Version | Purpose                        |
+| ---------------------------- | ------- | ------------------------------ |
+| **Tailwind CSS**             | 4.1.18  | Utility-first CSS framework    |
+| **@tailwindcss/postcss**     | 4.1.18  | PostCSS plugin for Tailwind v4 |
+| **tw-animate-css**           | 1.4.0   | Animation utilities            |
+| **class-variance-authority** | 0.7.1   | Component variant management   |
+| **tailwind-merge**           | 3.4.0   | Tailwind class merging         |
+| **clsx**                     | 2.1.1   | Conditional class utilities    |
 
 ### UI Components
 
-| Framework/Library | Version | Purpose |
-|------------------|---------|---------|
-| **shadcn/ui** | (new-york style) | Component library system |
-| **Radix UI** | 1.4.3 | Headless UI primitives |
-| **@radix-ui/react-slot** | 1.2.4 | Slot component primitive |
-| **lucide-react** | 0.563.0 | Icon library |
+| Framework/Library        | Version          | Purpose                  |
+| ------------------------ | ---------------- | ------------------------ |
+| **shadcn/ui**            | (new-york style) | Component library system |
+| **Radix UI**             | 1.4.3            | Headless UI primitives   |
+| **@radix-ui/react-slot** | 1.2.4            | Slot component primitive |
+| **lucide-react**         | 0.563.0          | Icon library             |
 
 ### Date Handling
 
-| Library | Version | Purpose |
-|---------|---------|---------|
-| **date-fns** | 4.1.0 | Date manipulation utilities |
+| Library      | Version | Purpose                     |
+| ------------ | ------- | --------------------------- |
+| **date-fns** | 4.1.0   | Date manipulation utilities |
 
 ## Build Tools and Configuration
 
@@ -128,7 +128,7 @@
 "@workos-inc/node": "^8.1.0"
 
 // Billing
-"@lemonsqueezy/lemonsqueezy.js": "^4.0.0"
+"@convex-dev/polar": "^0.1.0"
 
 // UI & Styling
 "tailwindcss": "^4.1.18"
@@ -271,15 +271,15 @@ convex/
 
 Located in `docs/` directory:
 
-| Technology | Version | Purpose |
-|-----------|---------|---------|
-| **Astro** | 5.6.1 | Static site generator |
-| **Starlight** | 0.37.6 | Documentation theme |
-| **@astrojs/starlight** | 0.37.6 | Starlight integration |
-| **@astrojs/tailwind** | 6.0.2 | Tailwind integration |
-| **@astrojs/sitemap** | 3.7.0 | Sitemap generation |
-| **starlight-blog** | 0.25.2 | Blog plugin |
-| **sharp** | 0.34.2 | Image optimization |
+| Technology             | Version | Purpose               |
+| ---------------------- | ------- | --------------------- |
+| **Astro**              | 5.6.1   | Static site generator |
+| **Starlight**          | 0.37.6  | Documentation theme   |
+| **@astrojs/starlight** | 0.37.6  | Starlight integration |
+| **@astrojs/tailwind**  | 6.0.2   | Tailwind integration  |
+| **@astrojs/sitemap**   | 3.7.0   | Sitemap generation    |
+| **starlight-blog**     | 0.25.2  | Blog plugin           |
+| **sharp**              | 0.34.2  | Image optimization    |
 
 **Dev Port:** 4321
 

@@ -28,7 +28,7 @@ Agencies can launch client portals with proper data isolation, billing enforceme
 - [ ] Admin or Staff can invite Client users linked to a Customer
 - [ ] Staff can only query data for their assigned Customers
 - [ ] Client can only query data for their own Customer
-- [ ] Admin can upgrade Org via Lemon Squeezy checkout
+- [ ] Admin can upgrade Org via Polar checkout
 - [ ] Subscription webhooks update Org caps (maxCustomers, maxStaff, maxClients)
 - [ ] System enforces usage caps before creating Customers/Staff/Clients
 - [ ] UI uses shadcn/ui component library
@@ -46,9 +46,10 @@ Agencies can launch client portals with proper data isolation, billing enforceme
 
 **Base template:** Fork of `get-convex/workos-authkit` (TanStack Start + Convex + WorkOS)
 
-**Original plan evolution:** Started from convex-saas scope doc, pivoted to workos-authkit base. Original plan had Better Auth and Stripe — now using WorkOS AuthKit and Lemon Squeezy.
+**Original plan evolution:** Started from convex-saas scope doc, pivoted to workos-authkit base. Original plan had Better Auth and Stripe — now using WorkOS AuthKit and Polar.
 
 **Existing codebase includes:**
+
 - TanStack Start with SSR
 - WorkOS AuthKit integration (`@workos/authkit-tanstack-react-start`)
 - Convex backend with JWT auth config
@@ -56,6 +57,7 @@ Agencies can launch client portals with proper data isolation, billing enforceme
 - Tailwind 4 setup
 
 **Data model:**
+
 - **Org**: WorkOS manages org + membership; Convex stores subscriptionId, status, planId, caps
 - **Customer**: Agency's client company (Convex table, linked to orgId)
 - **User**: WorkOS manages; linked to customerId if role = Client
@@ -69,32 +71,34 @@ Agencies can launch client portals with proper data isolation, billing enforceme
 | Client | Own Customer only | Limited access within scope |
 
 **Billing model:**
+
 - Freemium: Limited free tier, paid plans unlock more
 - Billing level: Org (not individual users)
-- Provider: Lemon Squeezy
+- Provider: Polar
 - Caps synced from plan metadata: maxCustomers, maxStaff, maxClients
 
 ## Constraints
 
 - **Tech stack**: Must use existing WorkOS + Convex + TanStack Start foundation
 - **Auth provider**: WorkOS AuthKit (not negotiable — already integrated)
-- **Billing provider**: Lemon Squeezy (Merchant of Record for global sales)
+- **Billing provider**: Polar
 - **Deployment**: Netlify (primary target)
 - **License**: MIT (matching upstream)
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| WorkOS over Better Auth | Already integrated in base template, has built-in orgs/roles | — Pending |
-| Lemon Squeezy over Stripe | Merchant of Record simplifies global tax/compliance | — Pending |
-| TanStack Start over plain Vite | SSR support, better SEO, faster initial load | — Pending |
-| Roles in WorkOS not Convex | Single source of truth, WorkOS handles membership | — Pending |
-| shadcn/ui for components | Accessible, customizable, works with Tailwind | — Pending |
+| Decision                       | Rationale                                                    | Outcome   |
+| ------------------------------ | ------------------------------------------------------------ | --------- |
+| WorkOS over Better Auth        | Already integrated in base template, has built-in orgs/roles | — Pending |
+| Polar over Stripe              | Convex component integration and simple setup                | — Pending |
+| TanStack Start over plain Vite | SSR support, better SEO, faster initial load                 | — Pending |
+| Roles in WorkOS not Convex     | Single source of truth, WorkOS handles membership            | — Pending |
+| shadcn/ui for components       | Accessible, customizable, works with Tailwind                | — Pending |
 
 ## Milestones
 
 ### v1.0: SaaS Starter Kit Foundation (Active)
+
 Multi-tenant foundation with auth, org management, team invites, billing. Phases 1-3.
 
 ### v1 Ship Blockers (as of 2026-02-10)
@@ -102,22 +106,25 @@ Multi-tenant foundation with auth, org management, team invites, billing. Phases
 **Phase 2 (Team Management):** ✓ Complete — Signed off 2026-02-10
 
 **Phase 3 (Billing) & General:**
-- [ ] Fix Lemon Squeezy plan mapping to use real variant IDs (`convex/lemonsqueezy/plans.ts`)
+
+- [ ] Configure Polar product IDs in `convex/polar.ts`
 - [ ] Enforce admin role on org settings updates (`convex/workos/updateOrg.ts`)
 - [ ] Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments)
 - [ ] Handle customer deletion with client users/invites (block or cascade cleanup)
 - [ ] Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
 - [ ] Clarify restore-user behavior (reinvite vs restore), adjust UI accordingly
 - [ ] Configure WorkOS webhook endpoint and `WORKOS_WEBHOOK_SECRET`
-- [ ] Configure Lemon Squeezy webhook endpoint and environment variables
+- [ ] Configure Polar webhook endpoint and environment variables
 - [ ] Add CapReachedBanner to invite flow
 - [ ] Update docs to reflect billing is implemented and required Convex env vars
 - [ ] Run v1 smoke test checklist and update requirement statuses
 
 ### v2.0: Admin Console (Planned)
+
 **Goal:** Platform-level admin dashboard — separate `/admin` route as an "app within the app" with its own sidebar and views. Enables the SaaS operator to manage all orgs, impersonate users, view platform metrics, and configure system settings.
 
 **Target features:**
+
 - Platform super admin role (above org-level admin)
 - All Orgs view with impersonation
 - Platform metrics dashboard (orgs, users, revenue, growth)
@@ -131,4 +138,5 @@ Multi-tenant foundation with auth, org management, team invites, billing. Phases
 **License:** MIT
 
 ---
-*Last updated: 2026-02-10 after ship-readiness review*
+
+_Last updated: 2026-02-10 after ship-readiness review_

@@ -49,6 +49,27 @@ npx convex env set WORKOS_WEBHOOK_SECRET wh_secret_xxx --prod
 VITE_CONVEX_URL=https://xxx.convex.cloud
 ```
 
+### Polar Billing (Optional)
+
+Enable paid plans by setting Polar credentials in Convex:
+
+```bash
+# Convex environment variables
+npx convex env set POLAR_ORGANIZATION_TOKEN polar_org_xxx
+npx convex env set POLAR_WEBHOOK_SECRET whsec_xxx
+npx convex env set POLAR_SERVER sandbox
+npx convex env set POLAR_PRO_MONTHLY_PRODUCT_ID product_xxx
+npx convex env set POLAR_PRO_YEARLY_PRODUCT_ID product_yyy
+npx convex env set POLAR_BUSINESS_MONTHLY_PRODUCT_ID product_zzz
+npx convex env set POLAR_BUSINESS_YEARLY_PRODUCT_ID product_aaa
+```
+
+Optional UI hint in `.env.local`:
+
+```bash
+VITE_POLAR_SERVER=sandbox
+```
+
 ## Getting WorkOS Credentials
 
 1. **Sign up** at [workos.com](https://workos.com)
@@ -83,11 +104,11 @@ VITE_CONVEX_URL=https://xxx.convex.cloud
 
 ## Environment Files
 
-| File | Purpose |
-|------|---------|
-| `.env.local` | Local development (gitignored) |
-| `.env.local.example` | Template for team members |
-| `convex.json` | Convex deployment config |
+| File                 | Purpose                        |
+| -------------------- | ------------------------------ |
+| `.env.local`         | Local development (gitignored) |
+| `.env.local.example` | Template for team members      |
+| `convex.json`        | Convex deployment config       |
 
 ## Production Variables
 
@@ -123,12 +144,15 @@ npm run dev
 ## Troubleshooting
 
 ### "Invalid client_id"
+
 - Check `WORKOS_CLIENT_ID` matches your WorkOS client
 
 ### "Invalid redirect_uri"
+
 - Ensure `WORKOS_REDIRECT_URI` is added in WorkOS dashboard
 - Must match exactly (including `http` vs `https`)
 
 ### Convex connection errors
+
 - Verify `VITE_CONVEX_URL` is correct
 - Run `npx convex dev` to ensure backend is running

@@ -20,7 +20,7 @@ Before deploying:
 1. ✅ Application runs locally without errors
 2. ✅ All environment variables configured
 3. ✅ WorkOS redirect URIs configured for production
-4. ✅ Lemon Squeezy webhooks configured (if using billing)
+4. ✅ Polar webhooks configured (if using billing)
 
 ---
 
@@ -57,7 +57,9 @@ npx convex deploy --delete-preview my-feature
 # Set production secrets
 npx convex env set WORKOS_CLIENT_ID client_xxx --prod
 npx convex env set WORKOS_API_KEY sk_live_xxx --prod
-npx convex env set LEMON_SQUEEZY_API_KEY xxx --prod
+npx convex env set POLAR_ORGANIZATION_TOKEN polar_org_xxx --prod
+npx convex env set POLAR_WEBHOOK_SECRET whsec_xxx --prod
+npx convex env set POLAR_SERVER production --prod
 
 # List production env vars
 npx convex env list --prod
@@ -92,11 +94,11 @@ netlify deploy --prod
 2. Connect repo to Netlify
 3. Configure build settings:
 
-| Setting | Value |
-|---------|-------|
-| Build command | `npm run build:combined` |
-| Publish directory | `dist` |
-| Node version | `20` (or latest LTS) |
+| Setting           | Value                    |
+| ----------------- | ------------------------ |
+| Build command     | `npm run build:combined` |
+| Publish directory | `dist`                   |
+| Node version      | `20` (or latest LTS)     |
 
 ### Option 3: Manual Deploy
 
@@ -126,13 +128,13 @@ netlify env:set VITE_CONVEX_URL https://your-production.convex.cloud
 
 ### Required Environment Variables
 
-| Variable | Source | Set in |
-|----------|--------|--------|
-| `VITE_CONVEX_URL` | Convex dashboard → Settings → URL | Netlify |
-| `WORKOS_REDIRECT_URI` | Your production domain + `/callback` | .env |
-| `WORKOS_CLIENT_ID` | WorkOS dashboard | Convex env |
-| `WORKOS_API_KEY` | WorkOS dashboard | Convex env |
-| `WORKOS_COOKIE_PASSWORD` | Generate strong password | Netlify |
+| Variable                 | Source                               | Set in     |
+| ------------------------ | ------------------------------------ | ---------- |
+| `VITE_CONVEX_URL`        | Convex dashboard → Settings → URL    | Netlify    |
+| `WORKOS_REDIRECT_URI`    | Your production domain + `/callback` | .env       |
+| `WORKOS_CLIENT_ID`       | WorkOS dashboard                     | Convex env |
+| `WORKOS_API_KEY`         | WorkOS dashboard                     | Convex env |
+| `WORKOS_COOKIE_PASSWORD` | Generate strong password             | Netlify    |
 
 ### Convex Auth Config
 
@@ -142,11 +144,11 @@ Ensure `convex/auth.config.ts` handles production:
 export default {
   providers: [
     {
-      domain: process.env.WORKOS_DOMAIN || "https://api.workos.com",
+      domain: process.env.WORKOS_DOMAIN || 'https://api.workos.com',
       applicationID: process.env.WORKOS_CLIENT_ID,
     },
   ],
-}
+};
 ```
 
 ---
@@ -190,21 +192,21 @@ The `netlify.toml` is pre-configured for the combined build:
 
 ### Build Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run build` | Build main app only |
-| `npm run build:docs` | Build docs only |
+| Command                  | Description                     |
+| ------------------------ | ------------------------------- |
+| `npm run build`          | Build main app only             |
+| `npm run build:docs`     | Build docs only                 |
 | `npm run build:combined` | Build both and merge to `dist/` |
 
 ### Git Integration Settings
 
 When connecting to Netlify:
 
-| Setting | Value |
-|---------|-------|
-| Build command | `npm run build:combined` |
-| Publish directory | `dist` |
-| Node version | `20` (or latest LTS) |
+| Setting           | Value                    |
+| ----------------- | ------------------------ |
+| Build command     | `npm run build:combined` |
+| Publish directory | `dist`                   |
+| Node version      | `20` (or latest LTS)     |
 
 ### \_redirects File
 
@@ -239,27 +241,32 @@ https://www.your-domain.com
 
 ---
 
-## Lemon Squeezy Production Setup
+## Polar Production Setup
 
 ### Webhook Endpoint
 
-Set webhook URL in Lemon Squeezy dashboard:
+Set webhook URL in the Polar dashboard:
 
 ```
-https://your-convex-url.convex.site/lemonsqueezy/webhook
+https://your-convex-url.convex.site/polar/events
 ```
 
 > Note: Use `.convex.site` domain, not your custom domain.
 
+Enable these events:
+
+- product.created
+- product.updated
+- subscription.created
+- subscription.updated
+
 ### Environment Variables
 
-Add billing environment variables to Netlify:
+Add billing environment variables to Netlify (optional UI hints):
 
 ```bash
 # Via CLI
-netlify env:set VITE_LEMONSQUEEZY_STORE_SLUG your-store-slug
-netlify env:set VITE_LEMONSQUEEZY_PRO_VARIANT_ID your_pro_variant_id
-netlify env:set VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID your_business_variant_id
+netlify env:set VITE_POLAR_SERVER production
 ```
 
 Or in Netlify Dashboard: **Site settings → Environment variables**
@@ -267,15 +274,18 @@ Or in Netlify Dashboard: **Site settings → Environment variables**
 Add billing environment variables to Convex:
 
 ```bash
-npx convex env set LEMONSQUEEZY_API_KEY your_api_key
-npx convex env set LEMONSQUEEZY_WEBHOOK_SECRET your_webhook_secret
-npx convex env set LEMONSQUEEZY_PRO_VARIANT_ID your_pro_variant_id
-npx convex env set LEMONSQUEEZY_BUSINESS_VARIANT_ID your_business_variant_id
+npx convex env set POLAR_ORGANIZATION_TOKEN your_organization_token
+npx convex env set POLAR_WEBHOOK_SECRET your_webhook_secret
+npx convex env set POLAR_SERVER production
+npx convex env set POLAR_PRO_MONTHLY_PRODUCT_ID your_pro_monthly_product_id
+npx convex env set POLAR_PRO_YEARLY_PRODUCT_ID your_pro_yearly_product_id
+npx convex env set POLAR_BUSINESS_MONTHLY_PRODUCT_ID your_business_monthly_product_id
+npx convex env set POLAR_BUSINESS_YEARLY_PRODUCT_ID your_business_yearly_product_id
 ```
 
 ### Product Configuration
 
-Plan limits are configured in `src/config/billing.ts` and `convex/lemonsqueezy/plans.ts`. Update these files if you want different limits for each plan tier.
+Plan limits are configured in `src/config/billing.ts` and `convex/billing/plans.ts`. Update these files if you want different limits for each plan tier.
 
 ---
 
@@ -391,6 +401,7 @@ netlify deploys:rollback --to=deploy-id
 ```
 
 Or via Netlify dashboard:
+
 1. Deploys tab
 2. Find previous working deploy
 3. Click "Publish deploy"
@@ -431,6 +442,7 @@ npx convex logs
 ### Error Tracking
 
 Consider adding:
+
 - Sentry for error tracking
 - LogRocket for session replay
 
@@ -445,6 +457,7 @@ Add redirects to `netlify.toml` or `public/_redirects`.
 ### "Cannot find module" errors
 
 Check build output:
+
 ```bash
 npm run build
 # Check dist/ folder contents
@@ -453,6 +466,7 @@ npm run build
 ### Auth not working in production
 
 Verify:
+
 1. WorkOS redirect URIs include production domain
 2. `WORKOS_REDIRECT_URI` env var is set correctly
 3. Cookies are secure/samesite configured

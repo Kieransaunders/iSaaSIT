@@ -28,12 +28,12 @@ iSaaSIT provides a multi-tenant architecture specifically designed for agencies 
 
 ### Core Entities
 
-| Entity | Description | Managed By |
-|--------|-------------|------------|
-| **Org** | Agency organization | WorkOS (org + membership) + Convex (subscription) |
-| **Customer** | Agency's client company | Convex table (linked to orgId) |
-| **User** | End user | WorkOS; linked to customerId if role = Client |
-| **StaffCustomerAssignment** | Maps Staff to accessible Customers | Convex table |
+| Entity                      | Description                        | Managed By                                        |
+| --------------------------- | ---------------------------------- | ------------------------------------------------- |
+| **Org**                     | Agency organization                | WorkOS (org + membership) + Convex (subscription) |
+| **Customer**                | Agency's client company            | Convex table (linked to orgId)                    |
+| **User**                    | End user                           | WorkOS; linked to customerId if role = Client     |
+| **StaffCustomerAssignment** | Maps Staff to accessible Customers | Convex table                                      |
 
 ### Entity Relationships
 
@@ -79,8 +79,8 @@ export const Route = createFileRoute('/_authenticated')({
   loader: async ({ location }) => {
     const { user } = await getAuth();
     if (!user) {
-      const href = await getSignInUrl({ 
-        data: { returnPathname: location.pathname } 
+      const href = await getSignInUrl({
+        data: { returnPathname: location.pathname },
       });
       throw redirect({ href });
     }
@@ -103,26 +103,29 @@ const convexQueryClient = new ConvexQueryClient(convex);
 
 TanStack Router uses file-based routing:
 
-| File | Route |
-|------|-------|
-| `routes/index.tsx` | `/` |
-| `routes/callback.tsx` | `/callback` |
-| `routes/_authenticated.tsx` | Layout (no URL) |
-| `routes/_authenticated/dashboard.tsx` | `/dashboard` |
+| File                                  | Route           |
+| ------------------------------------- | --------------- |
+| `routes/index.tsx`                    | `/`             |
+| `routes/callback.tsx`                 | `/callback`     |
+| `routes/_authenticated.tsx`           | Layout (no URL) |
+| `routes/_authenticated/dashboard.tsx` | `/dashboard`    |
 
 ## Role-Based Data Isolation
 
 ### Admin
+
 - Can access all organization data
 - Manages billing and subscriptions
 - Invites users and assigns roles
 
 ### Staff
+
 - Only accesses assigned Customers
 - Cannot see other Staff's assignments
 - Limited to standard operations within scope
 
 ### Client
+
 - Only accesses own Customer data
 - Cannot see other Customers in the Org
 - Limited to read-only or specific operations
@@ -131,6 +134,6 @@ TanStack Router uses file-based routing:
 
 Billing is at the **Organization level** (not per-user):
 
-- Provider: Lemon Squeezy (optional)
+- Provider: Polar (optional)
 - Caps enforced: `maxCustomers`, `maxStaff`, `maxClients`
 - Plan metadata syncs from subscription
