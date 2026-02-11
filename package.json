@@ -36,7 +36,7 @@
     "gsd:help": "echo 'Run: npm run setup:gsd' && echo 'Or manually: npx get-shit-done-cc@latest --claude --local'"
   },
   "dependencies": {
-    "@convex-dev/polar": "^0.1.0",
+    "@convex-dev/polar": "^0.7.3",
     "@convex-dev/react-query": "^0.1.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@tanstack/react-query": "^5.90.20",

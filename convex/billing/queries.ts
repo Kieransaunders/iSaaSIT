@@ -135,8 +135,8 @@ export const getBillingInfo = query({
 
     const now = Date.now();
     const subscriptionStatus = subscription?.status ?? 'inactive';
-    const trialEndsAtRaw = subscription?.trialEnd ?? subscription?.currentPeriodEnd;
-    const trialEndsAt = trialEndsAtRaw ? new Date(trialEndsAtRaw).getTime() : null;
+    const trialEndsAt =
+      org.trialEndsAt ?? (subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd).getTime() : null);
     const isTrialing = subscriptionStatus === 'trialing' && !!trialEndsAt && trialEndsAt > now;
 
     let trialDaysRemaining: number | null = null;
